@@ -23,7 +23,7 @@ export default function DoctorDashboard() {
   useEffect(() => {
     setIsMounted(true);
 
-    if (!isLoggedIn || user?.role !== 'doctor') {
+    if (!isLoggedIn || user?.role !== 1) {
       router.push('/');
       return;
     }

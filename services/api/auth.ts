@@ -4,24 +4,37 @@ import { LoginCredentials, RegisterCredentials, AuthResponse } from '@/types';
 export const authAPI = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
     try {
-      const response = await apiClient.post('/auth/login', credentials);
-      if (response.data.token) {
-        localStorage.setItem('authToken', response.data.token);
+      const response = await apiClient.post('/auth/login/', credentials);
+      const data = response.data;
+
+      if (data.tokens?.access) {
+        localStorage.setItem('authToken', data.tokens.access);
       }
-      return response.data;
+
+      return data;
     } catch (error: any) {
+
+      const errData = error.response?.data;
+
+      // Trường hợp API trả errors
+      if (errData?.errors) {
+        return {
+          message: errData.message || 'Login failed!',
+          errors: errData.errors
+        };
+      }
       return {
         success: false,
-        message: error.response?.data?.message || 'Login failed',
+        message: errData?.message || 'Login failed'
       };
     }
   },
 
   register: async (credentials: RegisterCredentials): Promise<AuthResponse> => {
     try {
-      const response = await apiClient.post('/auth/register', credentials);
-      if (response.data.token) {
-        localStorage.setItem('authToken', response.data.token);
+      const response = await apiClient.post('/auth/signup/', credentials);
+      if (response.data.tokens?.access) {
+        localStorage.setItem('authToken', response.data.tokens.access);
       }
       return response.data;
     } catch (error: any) {
