@@ -21,6 +21,9 @@ import {
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
+import { authAPI } from '@/services/api/auth';
+import { RegisterCredentials, UserRole } from '@/types';
+
 interface SignUpModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -43,9 +46,9 @@ export function SignUpModal({
     phone: '',
     username: '',
     password: '',
-    confirmPassword: '',
+    password_confirm: '',
     gender: '',
-    role: 'patient',
+    role: 2 as UserRole,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,17 +61,24 @@ export function SignUpModal({
   };
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    if (name === 'role') {
+      setFormData(prev => ({
+        ...prev,
+        [name]: parseInt(value) as UserRole
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
     setError('');
   };
 
   const validateForm = () => {
     if (!formData.firstName || !formData.lastName || !formData.email || 
         !formData.phone || !formData.username || !formData.password || 
-        !formData.confirmPassword || !formData.gender) {
+        !formData.password_confirm || !formData.gender) {
       setError('Please fill in all fields');
       return false;
     }
@@ -83,7 +93,7 @@ export function SignUpModal({
       return false;
     }
 
-    if (formData.password !== formData.confirmPassword) {
+    if (formData.password !== formData.password_confirm) {
       setError('Passwords do not match');
       return false;
     }
@@ -107,39 +117,42 @@ export function SignUpModal({
     setError('');
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // Mock successful registration
-      const mockUser = {
-        id: Date.now().toString(),
-        username: formData.username,
-        email: formData.email,
+      const registerData: RegisterCredentials = {
         firstName: formData.firstName,
         lastName: formData.lastName,
+        email: formData.email,
+        username: formData.username,
+        password: formData.password,
+        password_confirm: formData.password_confirm,
         phone: formData.phone,
         gender: formData.gender as 'male' | 'female' | 'other',
         role: formData.role,
-        createdAt: new Date().toISOString(),
       };
+  
 
-      const mockToken = 'mock_jwt_token_' + Math.random().toString(36);
-
-      onSuccess?.(mockUser, mockToken);
-      onClose();
-      setFormData({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        username: '',
-        password: '',
-        confirmPassword: '',
-        gender: '',
-        role: 'patient',
-      });
+      const result = await authAPI.register(registerData);
+      if ("user" in result && "tokens" in result && result.tokens.access) {
+        onSuccess?.(result.user, result.tokens.access);
+        onClose();
+        
+        // Reset form
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          username: '',
+          password: '',
+          password_confirm: '',
+          phone: '',
+          gender: '' as 'male' | 'female' | 'other',
+          role: 2 as UserRole,
+        });
+      } else {
+        // Đăng ký thất bại - hiển thị lỗi từ API
+        setError(result.message || 'Registration failed');
+      }
     } catch (err: any) {
-      setError(err.message || 'Registration failed');
+      setError(err.message || 'Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -235,13 +248,13 @@ export function SignUpModal({
 
             <div className="space-y-2">
               <Label htmlFor="role">Register as</Label>
-              <Select value={formData.role} onValueChange={(value) => handleSelectChange('role', value)}>
+              <Select value={formData.role.toString()} onValueChange={(value) => handleSelectChange('role', value)}>
                 <SelectTrigger disabled={isLoading}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="patient">Patient</SelectItem>
-                  <SelectItem value="doctor">Doctor</SelectItem>
+                  <SelectItem value="2">Patient</SelectItem>
+                  <SelectItem value="1">Doctor</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -281,7 +294,7 @@ export function SignUpModal({
               name="confirmPassword"
               type="password"
               placeholder="Confirm password"
-              value={formData.confirmPassword}
+              value={formData.password_confirm}
               onChange={handleChange}
               disabled={isLoading}
               required

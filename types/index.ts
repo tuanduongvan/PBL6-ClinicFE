@@ -1,5 +1,5 @@
 // User types
-export type UserRole = 'patient' | 'doctor' | 'admin';
+export type UserRole = 1 | 2 | 3; // 1: doctor, 2: patient, 3: admin
 
 export interface User {
   id: string;
@@ -15,7 +15,7 @@ export interface User {
 }
 
 export interface Doctor extends User {
-  role: 'doctor';
+  role: 1;
   specialization: string;
   experience: number;
   rating: number;
@@ -25,7 +25,7 @@ export interface Doctor extends User {
 }
 
 export interface Patient extends User {
-  role: 'patient';
+  role: 2;
   medicalHistory?: string;
 }
 
@@ -64,15 +64,35 @@ export interface RegisterCredentials {
   email: string;
   username: string;
   password: string;
-  confirmPassword: string;
+  password_confirm: string;
   phone: string;
   gender: 'male' | 'female' | 'other';
   role: UserRole;
 }
 
-export interface AuthResponse {
-  success: boolean;
-  user?: User;
-  token?: string;
-  message?: string;
+export interface AuthSuccessResponse {
+  message: string;
+  user: User;
+  tokens: {
+    access: string;
+    refresh: string;
+  };
 }
+
+export interface AuthValidationErrorResponse {
+  message: string;
+  errors: {
+    non_field_errors?: string[];
+    [key: string]: string[] | undefined;
+  };
+}
+
+export interface AuthExceptionResponse {
+  success: false;
+  message: string;
+}
+
+export type AuthResponse =
+  | AuthSuccessResponse
+  | AuthValidationErrorResponse
+  | AuthExceptionResponse;

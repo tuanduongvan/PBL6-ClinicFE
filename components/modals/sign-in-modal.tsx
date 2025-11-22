@@ -14,6 +14,8 @@ import { Label } from '@/components/ui/label';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
+import { authAPI } from '@/services/api/auth';
+
 interface SignInModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -47,38 +49,37 @@ export function SignInModal({
     e.preventDefault();
     setIsLoading(true);
     setError('');
-
+  
     try {
-      // Simulate API call - Replace with actual API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock validation
-      if (!formData.username || !formData.password) {
-        setError('Please fill in all fields');
-        setIsLoading(false);
+      const result = await authAPI.login({
+        username: formData.username,
+        password: formData.password
+      });
+  
+      if ("errors" in result) {
+        setError(result.errors.non_field_errors?.[0] || result.message);
         return;
       }
-
-      // Mock successful login
-      const mockUser = {
-        id: '101',
-        username: formData.username,
-        email: `${formData.username}@email.com`,
-        firstName: 'John',
-        lastName: 'Doe',
-        phone: '+1-555-1001',
-        gender: 'male' as const,
-        role: 'patient' as const,
-        createdAt: new Date().toISOString(),
-      };
-
-      const mockToken = 'mock_jwt_token_' + Math.random().toString(36);
-
-      onSuccess?.(mockUser, mockToken);
-      onClose();
-      setFormData({ username: '', password: '' });
+      
+      // TH2: lỗi success=false
+      if ("success" in result && result.success === false) {
+        setError(result.message);
+        return;
+      }
+      
+      // TH3: đăng nhập thành công (lúc này chắc chắn có tokens)
+      if ("tokens" in result && result.tokens.access) {
+        onSuccess?.(result.user, result.tokens.access);
+        onClose();
+        setFormData({ username: '', password: '' });
+        return;
+      }
+      
+      // fallback
+      setError(result.message || "Login failed");
+  
     } catch (err: any) {
-      setError(err.message || 'Login failed');
+      setError(err.message || 'Login failed. Please try again.');
     } finally {
       setIsLoading(false);
     }

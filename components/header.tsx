@@ -89,7 +89,7 @@ export function Header({ isLoggedIn, user, onLogout, onSignIn, onSignUp }: Heade
                       <p className="text-xs text-primary capitalize mt-1">Role: {user?.role}</p>
                     </div>
                     <DropdownMenuSeparator />
-                    {user?.role === 2 && (
+                    {user?.role === 1 && (
                       <>
                         <DropdownMenuItem asChild>
                           <Link href="/patient/profile" className="cursor-pointer">
