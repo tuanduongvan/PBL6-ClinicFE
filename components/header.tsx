@@ -73,7 +73,7 @@ export function Header({ isLoggedIn, user, onLogout, onSignIn, onSignUp }: Heade
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Avatar className="cursor-pointer hover:opacity-80 transition">
-                      <AvatarImage src={user?.avatar || "/placeholder.svg"} alt={user?.firstName} />
+                      <AvatarImage src={user?.avatar || "https://i.pinimg.com/736x/8f/1c/a2/8f1ca2029e2efceebd22fa05cca423d7.jpg"} alt={user?.first_name} />
                       <AvatarFallback>
                         {user?.firstName?.charAt(0)}
                         {user?.lastName?.charAt(0)}
@@ -83,13 +83,13 @@ export function Header({ isLoggedIn, user, onLogout, onSignIn, onSignUp }: Heade
                   <DropdownMenuContent align="end" className="w-56">
                     <div className="px-2 py-1.5">
                       <p className="font-semibold text-foreground">
-                        {user?.firstName} {user?.lastName}
+                        {user?.first_name} {user?.last_name}
                       </p>
                       <p className="text-xs text-muted-foreground">{user?.email}</p>
-                      <p className="text-xs text-primary capitalize mt-1">Role: {user?.role}</p>
+                      <p className="text-xs text-primary capitalize mt-1">Role: {user?.role.name}</p>
                     </div>
                     <DropdownMenuSeparator />
-                    {user?.role === 1 && (
+                    {user?.role.id === 1 && (
                       <>
                         <DropdownMenuItem asChild>
                           <Link href="/patient/profile" className="cursor-pointer">

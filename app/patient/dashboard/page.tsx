@@ -8,7 +8,8 @@ import { TopDoctorsSection } from '@/components/top-doctors-section';
 import { PatientAppointmentsSection } from '@/components/patient-appointments-section';
 import { ServicesSection } from '@/components/services-section';
 import { useAuthContext } from '@/components/auth-provider';
-import { Doctor, Appointment } from '@/types';
+import { Doctor } from '@/types/doctor';
+import { Appointment } from '@/types/appointment'
 import { mockDoctors } from '@/data/mock-doctors';
 import { mockAppointments } from '@/data/mock-appointments';
 import { Button } from '@/components/ui/button';
@@ -72,7 +73,7 @@ export default function PatientDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
-                  Welcome, {user?.firstName}! 👋
+                  Welcome, {user?.first_name}! 👋
                 </h1>
                 <p className="text-muted-foreground mt-2">Manage your appointments and book with our top doctors</p>
               </div>

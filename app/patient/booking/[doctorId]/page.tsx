@@ -6,7 +6,7 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { BookingAppointmentModal } from "@/components/modals/booking-appointment-modal"
 import { useAuthContext } from "@/components/auth-provider"
-import type { Doctor } from "@/types"
+import type { Doctor } from "@/types/doctor"
 import { mockDoctors } from "@/data/mock-doctors"
 import { Card, CardContent } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -70,12 +70,12 @@ export default function BookingPage() {
               <div className="flex flex-col sm:flex-row gap-6 items-start">
                 <img
                   src={doctor.avatar || "/placeholder.svg"}
-                  alt={`Dr. ${doctor.firstName}`}
+                  alt={`Dr. ${doctor.first_name}`}
                   className="w-32 h-32 rounded-lg object-cover"
                 />
                 <div className="flex-1">
                   <h1 className="text-3xl font-bold text-foreground mb-2">
-                    Dr. {doctor.firstName} {doctor.lastName}
+                    Dr. {doctor.first_name} {doctor.last_name}
                   </h1>
                   <p className="text-lg text-primary font-semibold mb-2">{doctor.specialization}</p>
                   <p className="text-muted-foreground mb-4">{doctor.bio}</p>

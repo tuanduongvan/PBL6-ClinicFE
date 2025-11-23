@@ -1,4 +1,4 @@
-import { Patient, User } from '@/types';
+import { Patient, User } from '@/types/auth';
 
 export const mockAdmin: User = {
   id: '0',
@@ -7,7 +7,7 @@ export const mockAdmin: User = {
   firstName: 'Admin',
   lastName: 'User',
   phone: '+1-555-0100',
-  gender: 'male',
+  gender: 1,
   role: 'admin',
   createdAt: new Date().toISOString(),
 };

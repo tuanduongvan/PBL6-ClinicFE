@@ -1,4 +1,4 @@
-import { Appointment } from '@/types';
+import { Appointment } from '@/types/appointment';
 
 export const mockAppointments: Appointment[] = [
   {

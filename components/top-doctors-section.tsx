@@ -1,6 +1,6 @@
 'use client';
 
-import { Doctor } from '@/types';
+import { Doctor } from '@/types/doctor';
 import { DoctorCard } from './doctor-card';
 
 interface TopDoctorsSectionProps {

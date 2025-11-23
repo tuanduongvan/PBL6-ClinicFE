@@ -4,7 +4,7 @@ import React from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import type { Doctor } from "@/types"
+import type { Doctor } from "@/types/doctor"
 import { Star, Users, Award } from "lucide-react"
 
 interface DoctorCardProps {
@@ -24,7 +24,7 @@ export function DoctorCard({ doctor, onBooking }: DoctorCardProps) {
       <div className="relative overflow-hidden h-48 bg-gradient-to-br from-primary/10 to-accent/10">
         <img
           src={doctor.avatar || "/placeholder.svg"}
-          alt={`Dr. ${doctor.firstName} ${doctor.lastName}`}
+          alt={`Dr. ${doctor.first_name} ${doctor.last_name}`}
           className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
         />
         <div
@@ -40,7 +40,7 @@ export function DoctorCard({ doctor, onBooking }: DoctorCardProps) {
         <div className="flex items-start justify-between">
           <div>
             <CardTitle className="text-foreground group-hover:text-primary transition-colors duration-300">
-              Dr. {doctor.firstName} {doctor.lastName}
+              Dr. {doctor.first_name} {doctor.last_name}
             </CardTitle>
             <CardDescription className="text-muted-foreground text-sm">
               {doctor.experience} years experience

@@ -19,7 +19,7 @@ export default function ProfilePage() {
   useEffect(() => {
     setIsMounted(true)
 
-    if (!isLoggedIn || user?.role !== 'patient') {
+    if (!isLoggedIn || user?.role.id !== 1) {
       router.push("/")
     }
   }, [isLoggedIn, user, router])
@@ -41,14 +41,14 @@ export default function ProfilePage() {
             <CardContent className="pt-6">
               <div className="text-center">
                 <Avatar className="w-24 h-24 mx-auto mb-4">
-                  <AvatarImage src={user?.avatar || "/placeholder.svg"} alt={user?.firstName} />
+                  <AvatarImage src={user?.avatar || "https://i.pinimg.com/736x/8f/1c/a2/8f1ca2029e2efceebd22fa05cca423d7.jpg"} alt={user?.first_name} />
                   <AvatarFallback>
-                    {user?.firstName?.charAt(0)}
-                    {user?.lastName?.charAt(0)}
+                    {user?.first_name?.charAt(0)}
+                    {user?.last_name?.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
                 <h2 className="text-2xl font-bold text-foreground mb-1">
-                  {user?.firstName} {user?.lastName}
+                  {user?.first_name} {user?.last_name}
                 </h2>
                 <p className="text-sm text-muted-foreground mb-4">Patient</p>
                 <Badge className="bg-primary/20 text-primary">Active Member</Badge>
@@ -65,11 +65,11 @@ export default function ProfilePage() {
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">First Name</label>
-                  <p className="text-lg text-foreground mt-1">{user?.firstName}</p>
+                  <p className="text-lg text-foreground mt-1">{user?.first_name}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Last Name</label>
-                  <p className="text-lg text-foreground mt-1">{user?.lastName}</p>
+                  <p className="text-lg text-foreground mt-1">{user?.last_name}</p>
                 </div>
               </div>
 
@@ -95,7 +95,7 @@ export default function ProfilePage() {
                     <User className="w-4 h-4" />
                     Gender
                   </label>
-                  <p className="text-lg text-foreground capitalize">{user?.gender || "Not specified"}</p>
+                  <p className="text-lg text-foreground capitalize">{user?.gender.name || "Not specified"}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground flex items-center gap-2 mb-2">

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Appointment } from '@/types';
+import { Appointment } from '@/types/appointment';
 import { Calendar, Clock, User, X } from 'lucide-react';
 
 interface PatientAppointmentsSectionProps {
