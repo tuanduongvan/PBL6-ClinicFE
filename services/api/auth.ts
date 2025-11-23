@@ -1,5 +1,5 @@
 import apiClient from './axios-config';
-import { LoginCredentials, RegisterCredentials, AuthResponse } from '@/types';
+import { LoginCredentials, RegisterCredentials, AuthResponse } from '@/types/auth';
 
 export const authAPI = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
@@ -16,7 +16,6 @@ export const authAPI = {
 
       const errData = error.response?.data;
 
-      // Trường hợp API trả errors
       if (errData?.errors) {
         return {
           message: errData.message || 'Login failed!',

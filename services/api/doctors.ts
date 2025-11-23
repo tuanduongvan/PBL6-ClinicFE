@@ -1,5 +1,6 @@
 import apiClient from './axios-config';
-import { Doctor, Appointment } from '@/types';
+import { Doctor } from '@/types/doctor';
+import { Appointment } from '@/types/appointment'
 
 export const doctorsAPI = {
   getAll: async (): Promise<Doctor[]> => {

@@ -20,7 +20,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { AlertCircle, Loader2, Calendar, Clock } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Doctor } from '@/types';
+import { Doctor } from '@/types/doctor';
 
 interface BookingAppointmentModalProps {
   isOpen: boolean;
@@ -144,7 +144,7 @@ export function BookingAppointmentModal({
         <DialogHeader>
           <DialogTitle>Book Appointment</DialogTitle>
           <DialogDescription>
-            {doctor && `Schedule with Dr. ${doctor.firstName} ${doctor.lastName}`}
+            {doctor && `Schedule with Dr. ${doctor.first_name} ${doctor.last_name}`}
           </DialogDescription>
         </DialogHeader>
 
@@ -161,11 +161,11 @@ export function BookingAppointmentModal({
             <div className="flex gap-3 p-3 bg-secondary/30 rounded-lg">
               <img 
                 src={doctor.avatar || "/placeholder.svg"} 
-                alt={doctor.firstName}
+                alt={doctor.first_name}
                 className="w-12 h-12 rounded-full"
               />
               <div>
-                <p className="font-semibold text-foreground">Dr. {doctor.firstName} {doctor.lastName}</p>
+                <p className="font-semibold text-foreground">Dr. {doctor.first_name} {doctor.last_name}</p>
                 <p className="text-sm text-muted-foreground">{doctor.specialization}</p>
               </div>
             </div>

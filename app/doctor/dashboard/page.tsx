@@ -8,7 +8,8 @@ import { StatsOverview } from '@/components/doctor/stats-overview';
 import { WorkScheduleForm } from '@/components/doctor/work-schedule-form';
 import { AppointmentsList } from '@/components/doctor/appointments-list';
 import { useAuthContext } from '@/components/auth-provider';
-import { Appointment, WorkSchedule } from '@/types';
+import { Appointment } from '@/types/appointment';
+import { WorkSchedule } from '@/types/schudele'
 import { mockAppointments } from '@/data/mock-appointments';
 import { mockDoctors } from '@/data/mock-doctors';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -23,7 +24,7 @@ export default function DoctorDashboard() {
   useEffect(() => {
     setIsMounted(true);
 
-    if (!isLoggedIn || user?.role !== 1) {
+    if (!isLoggedIn || user?.role.id !== 1) {
       router.push('/');
       return;
     }
@@ -78,7 +79,7 @@ export default function DoctorDashboard() {
         <section className="bg-gradient-to-r from-primary/10 to-accent/10 border-b border-primary/20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
-              Welcome, Dr. {user?.lastName}! 👨‍⚕️
+              Welcome, Dr. {user?.last_name}! 👨‍⚕️
             </h1>
             <p className="text-muted-foreground mt-2">Manage your appointments and work schedule</p>
           </div>

@@ -22,7 +22,7 @@ import { AlertCircle, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 import { authAPI } from '@/services/api/auth';
-import { RegisterCredentials, UserRole } from '@/types';
+import { RegisterCredentials, UserRoleID, UserGenderID } from '@/types/auth';
 
 interface SignUpModalProps {
   isOpen: boolean;
@@ -47,8 +47,8 @@ export function SignUpModal({
     username: '',
     password: '',
     password_confirm: '',
-    gender: '',
-    role: 2 as UserRole,
+    gender: 1 as UserGenderID,
+    role: 2 as UserRoleID,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,9 +64,16 @@ export function SignUpModal({
     if (name === 'role') {
       setFormData(prev => ({
         ...prev,
-        [name]: parseInt(value) as UserRole
+        [name]: parseInt(value) as UserRoleID
       }));
-    } else {
+    }
+    else if(name === 'gender'){
+      setFormData(prev => ({
+        ...prev,
+        [name]: parseInt(value) as UserGenderID
+      }));
+    }
+    else {
       setFormData(prev => ({
         ...prev,
         [name]: value
@@ -118,14 +125,14 @@ export function SignUpModal({
 
     try {
       const registerData: RegisterCredentials = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
         email: formData.email,
         username: formData.username,
         password: formData.password,
         password_confirm: formData.password_confirm,
         phone: formData.phone,
-        gender: formData.gender as 'male' | 'female' | 'other',
+        gender: formData.gender,
         role: formData.role,
       };
   
@@ -134,8 +141,7 @@ export function SignUpModal({
       if ("user" in result && "tokens" in result && result.tokens.access) {
         onSuccess?.(result.user, result.tokens.access);
         onClose();
-        
-        // Reset form
+      
         setFormData({
           firstName: '',
           lastName: '',
@@ -144,11 +150,10 @@ export function SignUpModal({
           password: '',
           password_confirm: '',
           phone: '',
-          gender: '' as 'male' | 'female' | 'other',
-          role: 2 as UserRole,
+          gender: 3 as UserGenderID,
+          role: 2 as UserRoleID,
         });
       } else {
-        // Đăng ký thất bại - hiển thị lỗi từ API
         setError(result.message || 'Registration failed');
       }
     } catch (err: any) {
@@ -223,6 +228,7 @@ export function SignUpModal({
             <Input
               id="phone"
               name="phone"
+              type="tel"
               placeholder="+1-555-1001"
               value={formData.phone}
               onChange={handleChange}
@@ -234,14 +240,14 @@ export function SignUpModal({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label htmlFor="gender">Gender</Label>
-              <Select value={formData.gender} onValueChange={(value) => handleSelectChange('gender', value)}>
+              <Select value={formData.gender.toString()} onValueChange={(value) => handleSelectChange('gender', value)}>
                 <SelectTrigger disabled={isLoading}>
-                  <SelectValue placeholder="Select gender" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="male">Male</SelectItem>
-                  <SelectItem value="female">Female</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
+                  <SelectItem value="1">Male</SelectItem>
+                  <SelectItem value="2">Female</SelectItem>
+                  <SelectItem value="3">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -253,8 +259,8 @@ export function SignUpModal({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="2">Patient</SelectItem>
-                  <SelectItem value="1">Doctor</SelectItem>
+                  <SelectItem value="3">Patient</SelectItem>
+                  <SelectItem value="2">Doctor</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -288,10 +294,10 @@ export function SignUpModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Label htmlFor="password_confirm">Confirm Password</Label>
             <Input
-              id="confirmPassword"
-              name="confirmPassword"
+              id="password_confirm"
+              name="password_confirm"
               type="password"
               placeholder="Confirm password"
               value={formData.password_confirm}
