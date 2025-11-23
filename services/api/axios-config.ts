@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-// Create axios instance with base configuration
 const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://partners-weekly-adjustments-fossil.trycloudflare.com/api',
   timeout: 10000,
@@ -9,7 +8,6 @@ const apiClient = axios.create({
   },
 });
 
-// Request interceptor to add token
 apiClient.interceptors.request.use(
   (config) => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
@@ -23,12 +21,10 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Response interceptor to handle errors
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Handle unauthorized
       if (typeof window !== 'undefined') {
         localStorage.removeItem('authToken');
         window.location.href = '/';

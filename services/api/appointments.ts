@@ -1,5 +1,5 @@
 import apiClient from './axios-config';
-import { Appointment } from '@/types';
+import { Appointment } from '@/types/appointment';
 
 export const appointmentsAPI = {
   create: async (appointment: any): Promise<Appointment | null> => {

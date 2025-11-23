@@ -10,7 +10,7 @@ import { TopDoctorsSection } from '@/components/top-doctors-section';
 import { useAuthContext } from '@/components/auth-provider';
 import { useRouter } from 'next/navigation';
 import { mockDoctors } from '@/data/mock-doctors';
-import { Doctor } from '@/types';
+import { Doctor } from '@/types/doctor';
 
 export default function Home() {
   const router = useRouter();
@@ -26,7 +26,7 @@ export default function Home() {
       openSignIn();
     } else {
       // Redirect to patient dashboard if not a patient
-      if (user?.role !== 2) {
+      if (user?.role.id !== 2) {
         router.push('/patient/dashboard');
       }
     }
@@ -35,7 +35,7 @@ export default function Home() {
   const handleBookDoctor = (doctor: Doctor) => {
     if (!isLoggedIn) {
       openSignIn();
-    } else if (user?.role === 2) {
+    } else if (user?.role.id === 2) {
       // Patient role - redirect to booking page
       router.push(`/patient/booking/${doctor.id}`);
     }
@@ -54,7 +54,7 @@ export default function Home() {
       />
 
       <main className="flex-1">
-        {!isLoggedIn || user?.role !== 2 ? (
+        {!isLoggedIn || user?.role.id !== 2 ? (
           <>
             <HeroSection 
               onBooking={handleBooking}

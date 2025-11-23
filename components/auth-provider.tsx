@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { SignInModal } from './modals/sign-in-modal';
 import { SignUpModal } from './modals/sign-up-modal';
-import { User } from '@/types';
+import { User } from '@/types/auth';
 
 interface AuthContextType {
   user: User | null;
