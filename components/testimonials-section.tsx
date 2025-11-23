@@ -10,21 +10,21 @@ export function TestimonialsSection() {
       role: 'Patient',
       text: 'Outstanding service! Dr. Smith helped clear my acne in just 3 months. Highly recommended!',
       rating: 5,
-      avatar: '/placeholder.svg?key=a1j2k3',
+      avatar: 'https://i.pinimg.com/736x/8f/1c/a2/8f1ca2029e2efceebd22fa05cca423d7.jpg',
     },
     {
       name: 'Michael Chen',
       role: 'Patient',
       text: 'Professional and caring doctors. The entire experience was smooth and pleasant.',
       rating: 5,
-      avatar: '/placeholder.svg?key=m4c5h6',
+      avatar: 'https://i.pinimg.com/736x/8f/1c/a2/8f1ca2029e2efceebd22fa05cca423d7.jpg',
     },
     {
       name: 'Sarah Williams',
       role: 'Patient',
       text: 'Best dermatology clinic I have visited. Their anti-aging treatment is amazing!',
       rating: 5,
-      avatar: '/placeholder.svg?key=s7w8i9',
+      avatar: 'https://i.pinimg.com/736x/8f/1c/a2/8f1ca2029e2efceebd22fa05cca423d7.jpg',
     },
   ];
 
