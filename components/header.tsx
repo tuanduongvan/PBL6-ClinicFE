@@ -20,9 +20,10 @@ interface HeaderProps {
   onLogout?: () => void;
   onSignIn?: () => void;
   onSignUp?: () => void;
+  hideMenu?: boolean;
 }
 
-export function Header({ isLoggedIn, user, onLogout, onSignIn, onSignUp }: HeaderProps) {
+export function Header({ isLoggedIn, user, onLogout, onSignIn, onSignUp, hideMenu = false }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const router = useRouter(); 
 
@@ -39,8 +40,6 @@ export function Header({ isLoggedIn, user, onLogout, onSignIn, onSignUp }: Heade
   const handleAppointmentsClick = () => {
     if (user?.role?.id === 3) {
       router.push("/patient/my-appointments");
-    } else if (user?.role?.id === 2) {
-      router.push("/doctor/my-appointments");
     }
   };
 
@@ -55,20 +54,22 @@ export function Header({ isLoggedIn, user, onLogout, onSignIn, onSignUp }: Heade
             <span className="hidden sm:inline font-semibold text-lg text-foreground">Derma Clinic</span>
           </Link>
 
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link href="/" className="text-foreground hover:text-primary transition">
-              Home
-            </Link>
-            <Link href="/doctors" className="text-foreground hover:text-primary transition">
-              Our Doctors
-            </Link>
-            <Link href="/services" className="text-foreground hover:text-primary transition">
-              Services
-            </Link>
-            <Link href="/contact" className="text-foreground hover:text-primary transition">
-              Contact
-            </Link>
-          </nav>
+          {!hideMenu && (
+            <nav className="hidden md:flex items-center space-x-8">
+              <Link href="/" className="text-foreground hover:text-primary transition">
+                Home
+              </Link>
+              <Link href="/doctors" className="text-foreground hover:text-primary transition">
+                Our Doctors
+              </Link>
+              <Link href="/services" className="text-foreground hover:text-primary transition">
+                Services
+              </Link>
+              <Link href="/contact" className="text-foreground hover:text-primary transition">
+                Contact
+              </Link>
+            </nav>
+          )}
 
           <div className="hidden md:flex items-center gap-3">
             {!isLoggedIn ? (
@@ -108,17 +109,17 @@ export function Header({ isLoggedIn, user, onLogout, onSignIn, onSignUp }: Heade
                     <DropdownMenuSeparator />
                     
                     {(user?.role?.id === 3 || user?.role?.id === 2) && (
-                      <>
-                        <DropdownMenuItem className="cursor-pointer" onClick={handleProfileClick}>
-                          <Settings className="w-4 h-4 mr-2" />
-                          My Profile
-                        </DropdownMenuItem>
-                        
-                        <DropdownMenuItem className="cursor-pointer" onClick={handleAppointmentsClick}>
-                          <Calendar className="w-4 h-4 mr-2" />
-                          My Appointments
-                        </DropdownMenuItem>
-                      </>
+                      <DropdownMenuItem className="cursor-pointer" onClick={handleProfileClick}>
+                        <Settings className="w-4 h-4 mr-2" />
+                        My Profile
+                      </DropdownMenuItem>
+                    )}
+                    
+                    {user?.role?.id === 3 && (
+                      <DropdownMenuItem className="cursor-pointer" onClick={handleAppointmentsClick}>
+                        <Calendar className="w-4 h-4 mr-2" />
+                        My Appointments
+                      </DropdownMenuItem>
                     )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem className="cursor-pointer text-destructive" onClick={onLogout}>
@@ -136,7 +137,7 @@ export function Header({ isLoggedIn, user, onLogout, onSignIn, onSignUp }: Heade
           </button>
         </div>
 
-        {isMenuOpen && (
+        {isMenuOpen && !hideMenu && (
           <div className="md:hidden pb-4 space-y-2">
             <Link href="/" onClick={closeMenu} className="block px-4 py-2 hover:bg-secondary rounded-lg">
               Home

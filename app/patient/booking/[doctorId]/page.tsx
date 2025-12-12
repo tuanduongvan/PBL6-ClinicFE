@@ -26,7 +26,7 @@ export default function BookingPage() {
   useEffect(() => {
     setIsMounted(true)
 
-    if (!isLoggedIn) {
+    if (!isLoggedIn || user?.role.id !== 3) {
       router.push("/")
       return
     }

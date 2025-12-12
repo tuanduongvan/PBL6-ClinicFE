@@ -1,46 +1,23 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
 import { StatsOverview } from '@/components/doctor/stats-overview';
-import { WorkScheduleForm } from '@/components/doctor/work-schedule-form';
 import { AppointmentsList } from '@/components/doctor/appointments-list';
 import { useAuthContext } from '@/components/auth-provider';
 import { Appointment } from '@/types/appointment';
-import { WorkSchedule } from '@/types/schudele'
 import { mockAppointments } from '@/data/mock-appointments';
 import { mockDoctors } from '@/data/mock-doctors';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function DoctorDashboard() {
-  const router = useRouter();
-  const { user, isLoggedIn, logout, openSignIn, openSignUp } = useAuthContext();
+  const { user } = useAuthContext();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [workSchedule, setWorkSchedule] = useState<WorkSchedule | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
-
-    if (!isLoggedIn || user?.role.id !== 1) {
-      router.push('/');
-      return;
-    }
-
     // Load doctor's appointments
     setAppointments(mockAppointments);
-
-    // Load doctor's work schedule
-    const doctor = mockDoctors[0]; // Mock: get first doctor
-    setWorkSchedule(doctor.workSchedule);
-  }, [isLoggedIn, user?.role, router]);
-
-  const handleScheduleSubmit = (schedule: WorkSchedule) => {
-    setWorkSchedule(schedule);
-    // Here you would call the API to save the schedule
-  };
+  }, []);
 
   const handleApproveAppointment = (id: string) => {
     setAppointments(prev =>
@@ -65,28 +42,20 @@ export default function DoctorDashboard() {
   const confirmedAppointments = appointments.filter(a => a.status === 'confirmed');
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <Header 
-        isLoggedIn={isLoggedIn}
-        user={user}
-        onLogout={logout}
-        onSignIn={openSignIn}
-        onSignUp={openSignUp}
-      />
-
+    <div className="flex flex-col min-h-screen bg-gray-50">
       <main className="flex-1">
         {/* Dashboard Header */}
-        <section className="bg-gradient-to-r from-primary/10 to-accent/10 border-b border-primary/20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
-              Welcome, Dr. {user?.last_name}! 👨‍⚕️
+        <section className="bg-white border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-6 py-6">
+            <h1 className="text-2xl font-semibold text-gray-900">
+              Welcome, Dr. {user?.last_name}
             </h1>
-            <p className="text-muted-foreground mt-2">Manage your appointments and work schedule</p>
+            <p className="text-gray-600 mt-1 text-sm">Manage your appointments and work schedule</p>
           </div>
         </section>
 
         {/* Stats Overview */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <section className="max-w-7xl mx-auto px-6 py-6">
           <StatsOverview 
             totalAppointments={appointments.length}
             totalPatients={doctor?.patients || 0}
@@ -95,49 +64,51 @@ export default function DoctorDashboard() {
           />
         </section>
 
-        {/* Dashboard Tabs */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Tabs defaultValue="appointments" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 lg:w-fit">
-              <TabsTrigger value="appointments">
-                Appointments ({pendingAppointments.length} pending)
-              </TabsTrigger>
-              <TabsTrigger value="schedule">Work Schedule</TabsTrigger>
-            </TabsList>
-
-            {/* Appointments Tab */}
-            <TabsContent value="appointments" className="space-y-6 mt-6">
+        {/* Appointments Section */}
+        <section className="max-w-7xl mx-auto px-6 py-6">
+          <div className="space-y-6">
+            {pendingAppointments.length > 0 && (
               <div>
-                <h2 className="text-2xl font-bold text-foreground mb-4">Pending Appointments</h2>
+                <div className="flex items-center gap-3 mb-4">
+                  <h2 className="text-lg font-semibold text-gray-900">Pending Appointments</h2>
+                  <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded text-xs font-medium">
+                    {pendingAppointments.length}
+                  </span>
+                </div>
                 <AppointmentsList 
                   appointments={pendingAppointments}
                   onApprove={handleApproveAppointment}
                   onReject={handleRejectAppointment}
                 />
               </div>
+            )}
 
+            {confirmedAppointments.length > 0 && (
               <div>
-                <h2 className="text-2xl font-bold text-foreground mb-4">Confirmed Appointments</h2>
+                <div className="flex items-center gap-3 mb-4">
+                  <h2 className="text-lg font-semibold text-gray-900">Confirmed Appointments</h2>
+                  <span className="px-2 py-0.5 bg-green-100 text-green-800 rounded text-xs font-medium">
+                    {confirmedAppointments.length}
+                  </span>
+                </div>
                 <AppointmentsList 
                   appointments={confirmedAppointments}
                 />
               </div>
-            </TabsContent>
+            )}
 
-            {/* Schedule Tab */}
-            <TabsContent value="schedule" className="mt-6">
-              {workSchedule && (
-                <WorkScheduleForm 
-                  currentSchedule={workSchedule}
-                  onSubmit={handleScheduleSubmit}
-                />
-              )}
-            </TabsContent>
-          </Tabs>
+            {pendingAppointments.length === 0 && confirmedAppointments.length === 0 && (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-3xl">📅</span>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">No Appointments</h3>
+                <p className="text-gray-600 text-sm">Your appointments will appear here</p>
+              </div>
+            )}
+          </div>
         </section>
       </main>
-
-      <Footer />
     </div>
   );
 }

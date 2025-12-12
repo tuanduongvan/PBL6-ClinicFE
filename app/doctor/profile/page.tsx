@@ -41,7 +41,7 @@ export default function ProfilePage() {
   useEffect(() => {
     setIsMounted(true)
 
-    if (!isLoggedIn || user?.role.id !== 3) {
+    if (!isLoggedIn || user?.role.id !== 2) {
       router.push("/")
     }
 
@@ -94,8 +94,6 @@ export default function ProfilePage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <Header isLoggedIn={isLoggedIn} user={user} onLogout={logout} onSignIn={openSignIn} onSignUp={openSignUp} />
-
       <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-2">My Profile</h1>
