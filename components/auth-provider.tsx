@@ -32,6 +32,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('authToken', token);
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
+    
+    // Auto-redirect doctors to their dashboard
+    if (userData.role.id === 2) {
+      window.location.href = '/doctor/dashboard';
+    }
   };
 
   const logout = () => {

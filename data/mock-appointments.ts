@@ -21,4 +21,14 @@ export const mockAppointments: Appointment[] = [
     notes: 'Consultation for anti-aging treatment',
     createdAt: new Date().toISOString(),
   },
+  {
+    id: '3',
+    patientId: '101',
+    doctorId: '1',
+    dateTime: new Date(new Date().getTime() - 86400000).toISOString(),
+    duration: 30,
+    status: 'completed',
+    notes: 'Completed consultation for skin condition',
+    createdAt: new Date(new Date().getTime() - 172800000).toISOString(),
+  },
 ];

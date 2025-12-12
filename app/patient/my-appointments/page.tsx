@@ -9,22 +9,28 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { RatingModal } from "@/components/modals/rating-modal"
 import { mockAppointments } from "@/data/mock-appointments"
 import { mockDoctors } from "@/data/mock-doctors"
-import { Calendar, Clock, CheckCircle2, AlertCircle, Loader2 } from "lucide-react"
+import { Calendar, Clock, CheckCircle2, AlertCircle, Loader2, Star } from "lucide-react"
+import { Doctor } from "@/types/doctor"
 
 export default function MyAppointmentsPage() {
   const router = useRouter()
   const { user, isLoggedIn, logout, openSignIn, openSignUp } = useAuthContext()
   const [isMounted, setIsMounted] = useState(false)
+  const [ratingModalOpen, setRatingModalOpen] = useState(false)
+  const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null)
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null)
 
   useEffect(() => {
     setIsMounted(true)
 
-    if (!isLoggedIn || user?.role !== 'patient') {
+    if (!isLoggedIn || user?.role.id !== 3) {
       router.push("/")
+      return
     }
-  }, [isLoggedIn, user, router])
+  }, [isLoggedIn, user?.role?.id, router])
 
   if (!isMounted) return null
 
@@ -44,6 +50,13 @@ export default function MyAppointmentsPage() {
             Pending
           </Badge>
         )
+      case "completed":
+        return (
+          <Badge className="bg-blue-100 text-blue-800 flex items-center gap-1 w-fit">
+            <CheckCircle2 className="w-3 h-3" />
+            Completed
+          </Badge>
+        )
       case "cancelled":
         return (
           <Badge className="bg-red-100 text-red-800 flex items-center gap-1 w-fit">
@@ -57,7 +70,7 @@ export default function MyAppointmentsPage() {
   }
 
   const getDoctorInfo = (doctorId: string) => {
-    return mockDoctors.find((d) => d.id === doctorId)
+    return mockDoctors.find((d) => d.id === Number(doctorId))
   }
 
   const formatDateTime = (dateTimeString: string) => {
@@ -66,6 +79,26 @@ export default function MyAppointmentsPage() {
       date: date.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
       time: date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
     }
+  }
+
+  const handleRateClick = (doctor: Doctor, appointmentId: string) => {
+    setSelectedDoctor(doctor)
+    setSelectedAppointmentId(appointmentId)
+    setRatingModalOpen(true)
+  }
+
+  const handleRatingSuccess = (ratingData: { rating: number; comment: string }) => {
+    // Here you would call the API to save the rating
+    console.log('Rating submitted:', {
+      appointmentId: selectedAppointmentId,
+      doctorId: selectedDoctor?.id,
+      ...ratingData
+    })
+    
+    // Show success message or update UI
+    setRatingModalOpen(false)
+    setSelectedDoctor(null)
+    setSelectedAppointmentId(null)
   }
 
   return (
@@ -97,7 +130,7 @@ export default function MyAppointmentsPage() {
                         <div className="flex-shrink-0">
                           <img
                             src={doctor.avatar || "/placeholder.svg"}
-                            alt={`Dr. ${doctor.firstName}`}
+                            alt={`Dr. ${doctor.first_name}`}
                             className="w-24 h-24 rounded-lg object-cover"
                           />
                         </div>
@@ -107,7 +140,7 @@ export default function MyAppointmentsPage() {
                         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                           <div>
                             <h3 className="text-xl font-semibold text-foreground mb-1">
-                              {doctor ? `Dr. ${doctor.firstName} ${doctor.lastName}` : "Unknown Doctor"}
+                              {doctor ? `Dr. ${doctor.first_name} ${doctor.last_name}` : "Unknown Doctor"}
                             </h3>
                             {doctor && <p className="text-sm text-primary font-medium mb-4">{doctor.specialization}</p>}
 
@@ -133,6 +166,17 @@ export default function MyAppointmentsPage() {
 
                           <div className="flex flex-col items-end gap-3">
                             {getStatusBadge(appointment.status)}
+                            {appointment.status === "completed" && doctor && (
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleRateClick(doctor, appointment.id)}
+                                className="flex items-center gap-1"
+                              >
+                                <Star className="w-4 h-4" />
+                                Rate
+                              </Button>
+                            )}
                             {appointment.status === "confirmed" && (
                               <Button variant="outline" size="sm">
                                 Reschedule
@@ -162,6 +206,17 @@ export default function MyAppointmentsPage() {
       </main>
 
       <Footer />
+
+      <RatingModal
+        isOpen={ratingModalOpen}
+        onClose={() => {
+          setRatingModalOpen(false)
+          setSelectedDoctor(null)
+          setSelectedAppointmentId(null)
+        }}
+        doctor={selectedDoctor || undefined}
+        onSuccess={handleRatingSuccess}
+      />
     </div>
   )
 }

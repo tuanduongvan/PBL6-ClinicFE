@@ -7,6 +7,7 @@ import { Footer } from '@/components/footer';
 import { TopDoctorsSection } from '@/components/top-doctors-section';
 import { PatientAppointmentsSection } from '@/components/patient-appointments-section';
 import { ServicesSection } from '@/components/services-section';
+import { BookingAppointmentModal } from '@/components/modals/booking-appointment-modal';
 import { useAuthContext } from '@/components/auth-provider';
 import { Doctor } from '@/types/doctor';
 import { Appointment } from '@/types/appointment'
@@ -21,12 +22,13 @@ export default function PatientDashboard() {
   const [topDoctors, setTopDoctors] = useState<Doctor[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
     
-    if (!isLoggedIn) {
+    if (!isLoggedIn || user?.role.id !== 3) {
       router.push('/');
       return;
     }
@@ -40,8 +42,7 @@ export default function PatientDashboard() {
 
   const handleBookDoctor = (doctor: Doctor) => {
     setSelectedDoctor(doctor);
-    // Navigate to booking modal or page
-    router.push(`/patient/booking/${doctor.id}`);
+    setIsBookingOpen(true);
   };
 
   const handleCancelAppointment = (appointmentId: string) => {
@@ -52,6 +53,17 @@ export default function PatientDashboard() {
           : apt
       )
     );
+  };
+
+  const handleBookingSuccess = () => {
+    setIsBookingOpen(false);
+    setSelectedDoctor(null);
+    router.push("/patient/my-appointments");
+  };
+
+  const handleBookingClose = () => {
+    setIsBookingOpen(false);
+    setSelectedDoctor(null);
   };
 
   if (!isMounted) return null;
@@ -106,6 +118,13 @@ export default function PatientDashboard() {
       </main>
 
       <Footer />
+
+      <BookingAppointmentModal
+        isOpen={isBookingOpen && !!selectedDoctor}
+        onClose={handleBookingClose}
+        doctor={selectedDoctor || undefined}
+        onSuccess={handleBookingSuccess}
+      />
     </div>
   );
 }

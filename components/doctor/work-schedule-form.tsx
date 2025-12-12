@@ -112,7 +112,7 @@ export function WorkScheduleForm({ currentSchedule, onSubmit }: WorkScheduleForm
               <div className="flex items-center gap-3">
                 <Checkbox
                   id={day}
-                  checked={schedule[day].length > 0}
+                  checked={schedule[day]?.length > 0}
                   onCheckedChange={() => handleDayToggle(day)}
                   disabled={isLoading}
                 />
@@ -124,7 +124,7 @@ export function WorkScheduleForm({ currentSchedule, onSubmit }: WorkScheduleForm
                 </Label>
               </div>
 
-              {schedule[day].length > 0 && (
+              {schedule[day]?.length > 0 && (
                 <div className="space-y-2 ml-6">
                   {schedule[day].map((slot, index) => (
                     <div key={index} className="flex gap-2 items-end">
