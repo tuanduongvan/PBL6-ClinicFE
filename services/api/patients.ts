@@ -22,13 +22,8 @@ export const patientsAPI = {
     }
   },
 
-  update: async (id: string, data: Partial<Patient>) => {
-    try {
-      const response = await apiClient.put(`/patients/${id}`, data);
-      return response.data;
-    } catch (error) {
-      console.error('Error updating patient:', error);
-      return null;
-    }
+  update: async (data: Partial<Patient>): Promise<Patient> => {
+    const response = await apiClient.patch('/patients/me/', data);
+    return response.data.data;
   },
 };
