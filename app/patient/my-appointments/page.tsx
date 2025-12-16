@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { RatingModal } from "@/components/modals/rating-modal"
+import { BookingAppointmentModal } from "@/components/modals/booking-appointment-modal"
 import { mockAppointments } from "@/data/mock-appointments"
 import { mockDoctors } from "@/data/mock-doctors"
 import { Calendar, Clock, CheckCircle2, AlertCircle, Loader2, Star } from "lucide-react"
@@ -22,6 +23,8 @@ export default function MyAppointmentsPage() {
   const [ratingModalOpen, setRatingModalOpen] = useState(false)
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null)
   const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null)
+  const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false)
+  const [rescheduleDoctor, setRescheduleDoctor] = useState<Doctor | null>(null)
 
   useEffect(() => {
     setIsMounted(true)
@@ -101,6 +104,26 @@ export default function MyAppointmentsPage() {
     setSelectedAppointmentId(null)
   }
 
+  const handleRescheduleClick = (doctor: Doctor) => {
+    setRescheduleDoctor(doctor)
+    setIsRescheduleModalOpen(true)
+  }
+
+  const handleRescheduleSuccess = (appointmentData: any) => {
+    // Here you would call the API to reschedule the appointment
+    console.log('Appointment rescheduled:', appointmentData)
+    
+    // Close modal and refresh appointments list
+    setIsRescheduleModalOpen(false)
+    setRescheduleDoctor(null)
+    // Optionally refresh the appointments list here
+  }
+
+  const handleRescheduleClose = () => {
+    setIsRescheduleModalOpen(false)
+    setRescheduleDoctor(null)
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header isLoggedIn={isLoggedIn} user={user} onLogout={logout} onSignIn={openSignIn} onSignUp={openSignUp} />
@@ -177,8 +200,12 @@ export default function MyAppointmentsPage() {
                                 Rate
                               </Button>
                             )}
-                            {appointment.status === "confirmed" && (
-                              <Button variant="outline" size="sm">
+                            {appointment.status === "confirmed" && doctor && (
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleRescheduleClick(doctor)}
+                              >
                                 Reschedule
                               </Button>
                             )}
@@ -199,7 +226,7 @@ export default function MyAppointmentsPage() {
         )}
 
         <div className="mt-8 pt-8 border-t border-border">
-          <Button onClick={() => router.push("/")} className="bg-primary hover:bg-primary/90">
+          <Button onClick={() => router.push("/doctors")} className="bg-primary hover:bg-primary/90">
             Book Another Appointment
           </Button>
         </div>
@@ -216,6 +243,13 @@ export default function MyAppointmentsPage() {
         }}
         doctor={selectedDoctor || undefined}
         onSuccess={handleRatingSuccess}
+      />
+
+      <BookingAppointmentModal
+        isOpen={isRescheduleModalOpen && !!rescheduleDoctor}
+        onClose={handleRescheduleClose}
+        doctor={rescheduleDoctor || undefined}
+        onSuccess={handleRescheduleSuccess}
       />
     </div>
   )
