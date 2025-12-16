@@ -14,6 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Mail, Phone, User, Calendar, Loader2 } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { patientsAPI } from "@/services/api/patients"
+import type { UserGenderID, UserGenderName } from "@/types/auth"
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -22,26 +23,36 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState("")
-  const [formData, setFormData] = useState({
-    first_name: "",
-    last_name: "",
-    phone: "",
-    genderId: "1",
+
+  const [localUser, setLocalUser] = useState(user)
+  const [formData, setFormData] = useState<{
+    first_name: string
+    last_name: string
+    phone: string
+    genderId: UserGenderID
+  }>({
+    first_name: '',
+    last_name: '',
+    phone: '',
+    genderId: 1,
   })
 
-  const genderOptions = useMemo(
-    () => [
-      { id: "1", name: "Male" },
-      { id: "2", name: "Female" },
-      { id: "3", name: "Other" },
-    ],
-    []
-  )
+  const genderOptions = useMemo<
+  { id: UserGenderID; name: UserGenderName }[]
+  >(() => [
+    { id: 1, name: 'Male' },
+    { id: 2, name: 'Female' },
+    { id: 3, name: 'Other' },
+  ], [])
+
+  useEffect(() => {
+    setLocalUser(user)
+  }, [user])
 
   useEffect(() => {
     setIsMounted(true)
 
-    if (!isLoggedIn || user?.role.id !== 3) {
+    if (!isLoggedIn || user?.role?.id !== 3) {
       router.push("/")
     }
 
@@ -50,13 +61,19 @@ export default function ProfilePage() {
         first_name: user.first_name || "",
         last_name: user.last_name || "",
         phone: user.phone || "",
-        genderId: String(user.gender?.id ?? "1"),
+        genderId: (user.gender?.id ?? 1) as UserGenderID,
       })
     }
   }, [isLoggedIn, user, router])
 
-  const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+  const handleChange = <K extends keyof typeof formData>(
+    field: K,
+    value: typeof formData[K]
+  ) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value,
+    }))
   }
 
   const handleSave = async () => {
@@ -65,7 +82,7 @@ export default function ProfilePage() {
     setError("")
 
     try {
-      const updated = await patientsAPI.update(String(user.id), {
+      const updated = await patientsAPI.update({
         first_name: formData.first_name,
         last_name: formData.last_name,
         phone: formData.phone,
@@ -80,8 +97,22 @@ export default function ProfilePage() {
         return
       }
 
-      const token = typeof window !== "undefined" ? localStorage.getItem("authToken") || "" : ""
-      login(updated, token)
+      setLocalUser((prev) => {
+        if (!prev) return prev
+      
+        const gender = genderOptions.find(
+          (g) => g.id === formData.genderId
+        )
+      
+        return {
+          ...prev,
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          phone: formData.phone,
+          gender: gender ?? prev.gender,
+        }
+      })
+
       setIsEditing(false)
     } catch (err: any) {
       setError(err?.message || "Có lỗi xảy ra, vui lòng thử lại.")
@@ -91,6 +122,7 @@ export default function ProfilePage() {
   }
 
   if (!isMounted) return null
+  const currentUser = localUser
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -109,12 +141,12 @@ export default function ProfilePage() {
                 <Avatar className="w-24 h-24 mx-auto mb-4">
                   <AvatarImage src={user?.avatar || "https://i.pinimg.com/736x/8f/1c/a2/8f1ca2029e2efceebd22fa05cca423d7.jpg"} alt={user?.first_name} />
                   <AvatarFallback>
-                    {user?.first_name?.charAt(0)}
-                    {user?.last_name?.charAt(0)}
+                    {currentUser?.first_name?.charAt(0)}
+                    {currentUser?.last_name?.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
                 <h2 className="text-2xl font-bold text-foreground mb-1">
-                  {user?.first_name} {user?.last_name}
+                  {currentUser?.first_name} {currentUser?.last_name}
                 </h2>
                 <p className="text-sm text-muted-foreground mb-4">Patient</p>
                 <Badge className="bg-primary/20 text-primary">Active Member</Badge>
@@ -137,7 +169,7 @@ export default function ProfilePage() {
                       onChange={(e) => handleChange("first_name", e.target.value)}
                     />
                   ) : (
-                    <p className="text-lg text-foreground mt-1">{user?.first_name}</p>
+                    <p className="text-lg text-foreground mt-1">{currentUser?.first_name}</p>
                   )}
                 </div>
                 <div className="space-y-2">
@@ -148,7 +180,7 @@ export default function ProfilePage() {
                       onChange={(e) => handleChange("last_name", e.target.value)}
                     />
                   ) : (
-                    <p className="text-lg text-foreground mt-1">{user?.last_name}</p>
+                    <p className="text-lg text-foreground mt-1">{currentUser?.last_name}</p>
                   )}
                 </div>
               </div>
@@ -158,7 +190,7 @@ export default function ProfilePage() {
                   <Mail className="w-4 h-4" />
                   Email Address
                 </Label>
-                <p className="text-lg text-foreground">{user?.email}</p>
+                <p className="text-lg text-foreground">{currentUser?.email}</p>
               </div>
 
               <div className="space-y-2">
@@ -172,7 +204,7 @@ export default function ProfilePage() {
                     onChange={(e) => handleChange("phone", e.target.value)}
                   />
                 ) : (
-                  <p className="text-lg text-foreground">{user?.phone || "Not provided"}</p>
+                  <p className="text-lg text-foreground">{currentUser?.phone || "Not provided"}</p>
                 )}
               </div>
 
@@ -184,22 +216,24 @@ export default function ProfilePage() {
                   </Label>
                   {isEditing ? (
                     <Select
-                      value={formData.genderId}
-                      onValueChange={(v) => handleChange("genderId", v)}
+                    value={String(formData.genderId)}
+                    onValueChange={(v) =>
+                      handleChange('genderId', Number(v) as UserGenderID)
+                    }
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select gender" />
                       </SelectTrigger>
                       <SelectContent>
                         {genderOptions.map((g) => (
-                          <SelectItem key={g.id} value={g.id}>
+                          <SelectItem key={g.id} value={String(g.id)}>
                             {g.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   ) : (
-                    <p className="text-lg text-foreground capitalize">{user?.gender.name || "Not specified"}</p>
+                    <p className="text-lg text-foreground capitalize">{currentUser?.gender.name || "Not specified"}</p>
                   )}
                 </div>
                 <div>
@@ -223,12 +257,12 @@ export default function ProfilePage() {
                       onClick={() => {
                         setIsEditing(false)
                         setError("")
-                        if (user) {
+                        if (currentUser) {
                           setFormData({
-                            first_name: user.first_name || "",
-                            last_name: user.last_name || "",
-                            phone: user.phone || "",
-                            genderId: String(user.gender?.id ?? "1"),
+                            first_name: currentUser.first_name || "",
+                            last_name: currentUser.last_name || "",
+                            phone: currentUser.phone || "",
+                            genderId: (currentUser.gender?.id ?? 1) as UserGenderID,
                           })
                         }
                       }}
