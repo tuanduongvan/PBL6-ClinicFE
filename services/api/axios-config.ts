@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://comprehensive-pdt-barriers-installation.trycloudflare.com/api',
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://relates-why-produces-philip.trycloudflare.com/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
