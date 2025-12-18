@@ -1,114 +1,174 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { WorkScheduleForm } from '@/components/doctor/work-schedule-form';
-import { WorkSchedule } from '@/types/schudele';
-import { mockDoctors } from '@/data/mock-doctors';
-import { Calendar, Clock } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { scheduleApi } from "@/services/api/schedules";
+import { Schedule } from "@/types/schudele";
+import { WorkScheduleForm } from "@/components/doctor/work-schedule-form";
+import { Button } from "@/components/ui/button";
+import { Trash2, Clock, Calendar, Pencil } from "lucide-react";
+import { toast } from "sonner";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function WorkSchedulePage() {
-  const [workSchedule, setWorkSchedule] = useState<WorkSchedule | null>(null);
-  const [showRegisterForm, setShowRegisterForm] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  useEffect(() => {
-    setIsMounted(true);
-    // Load doctor's work schedule
-    const doctor = mockDoctors[0]; // Mock: get first doctor
-    setWorkSchedule(doctor.workSchedule);
-  }, []);
-
-  const handleScheduleSubmit = (schedule: WorkSchedule) => {
-    setWorkSchedule(schedule);
-    setShowRegisterForm(false);
-    // Here you would call the API to save the schedule
+  const fetchSchedules = async () => {
+    try {
+      const data = await scheduleApi.getMySchedules();
+      setSchedules(data);
+    } catch (error) {
+      toast.error("Không thể tải danh sách lịch làm việc");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (!isMounted) return null;
+  useEffect(() => {
+    fetchSchedules();
+  }, []);
 
-  const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const handleEdit = (schedule: Schedule) => {
+    setEditingSchedule(schedule);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingSchedule(null);
+  };
+
+  const handleSuccess = () => {
+    fetchSchedules();
+    setEditingSchedule(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (deleteId === null) return;
+
+    try {
+      setIsDeleting(true);
+      await scheduleApi.deleteSchedule(deleteId);
+      toast.success("Đã xóa lịch làm việc");
+      await fetchSchedules();
+    } catch (error) {
+      toast.error("Xóa thất bại, vui lòng thử lại");
+    } finally {
+      setIsDeleting(false);
+      setDeleteId(null);
+    }
+  };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      <main className="flex-1 p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-semibold text-gray-900 mb-1">Work Schedule</h1>
-              <p className="text-gray-600 text-sm">View and manage your weekly work schedule</p>
-            </div>
-            <Button 
-              onClick={() => setShowRegisterForm(!showRegisterForm)}
-              className="bg-teal-600 hover:bg-teal-700 text-white transition-colors"
-            >
-              {showRegisterForm ? 'Cancel' : 'Register Schedule'}
-            </Button>
-          </div>
+    <div className="container mx-auto p-6 space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Quản lý lịch làm việc</h1>
+        <p className="text-muted-foreground">
+          Cấu hình thời gian làm việc cố định hàng tuần.
+        </p>
+      </div>
 
-          {showRegisterForm ? (
-            <div className="transition-opacity duration-200">
-              <WorkScheduleForm 
-                currentSchedule={workSchedule || undefined}
-                onSubmit={handleScheduleSubmit}
-              />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-1">
+          <WorkScheduleForm 
+            onSuccess={handleSuccess} 
+            editingSchedule={editingSchedule}
+            onCancel={handleCancelEdit}
+          />
+        </div>
+
+        <div className="lg:col-span-2 space-y-4">
+          <h2 className="text-xl font-semibold flex items-center gap-2">
+            Danh sách lịch hiện tại
+            <Badge variant="outline" className="ml-2">{schedules.length}</Badge>
+          </h2>
+          
+          {loading ? (
+            <div className="flex justify-center p-8">Đang tải dữ liệu...</div>
+          ) : schedules.length === 0 ? (
+            <div className="text-center p-8 border border-dashed rounded-lg text-muted-foreground bg-muted/50">
+              Chưa có lịch làm việc nào được thiết lập.
             </div>
           ) : (
-            <Card className="bg-white shadow-sm border border-gray-200">
-              <CardHeader className="border-b border-gray-200">
-                <CardTitle className="text-lg font-semibold text-gray-900">Current Schedule</CardTitle>
-                <CardDescription className="text-sm text-gray-600">Your weekly work schedule</CardDescription>
-              </CardHeader>
-              <CardContent className="p-6">
-                {workSchedule ? (
-                  <div className="space-y-4">
-                    {DAYS.map((day) => {
-                      const slots = workSchedule[day] || [];
-                      return (
-                        <div key={day} className="pb-4 border-b border-gray-100 last:border-0 last:pb-0">
-                          <div className="flex items-center gap-2 mb-3">
-                            <Calendar className="w-4 h-4 text-gray-500" />
-                            <h3 className="font-medium text-gray-900">{day}</h3>
-                          </div>
-                          {slots.length > 0 ? (
-                            <div className="ml-6 space-y-2">
-                              {slots.map((slot, index) => (
-                                <div key={index} className="flex items-center gap-2 text-sm text-gray-700">
-                                  <Clock className="w-4 h-4 text-gray-400" />
-                                  <span>
-                                    {slot.startTime} - {slot.endTime}
-                                  </span>
-                                  {slot.isAvailable && (
-                                    <span className="ml-auto px-2 py-0.5 bg-green-100 text-green-800 rounded text-xs">
-                                      Available
-                                    </span>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <p className="ml-6 text-gray-500 text-sm italic">No schedule for this day</p>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Calendar className="w-8 h-8 text-gray-400" />
+            <div className="grid gap-4 md:grid-cols-2">
+              {schedules.map((schedule) => (
+                <Card key={schedule.id} className={`relative overflow-hidden group transition-all ${editingSchedule?.id === schedule.id ? 'border-primary ring-1 ring-primary' : 'hover:border-primary/50'}`}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="flex justify-between items-center text-lg">
+                      <span className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-primary" />
+                        {schedule.day_of_week_display}
+                      </span>
+                      
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button 
+                          variant="ghost" size="icon" className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                          onClick={() => handleEdit(schedule)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+
+                        <Button 
+                          variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => setDeleteId(schedule.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center gap-2 text-2xl font-bold text-primary mb-2">
+                      <Clock className="h-5 w-5" />
+                      {schedule.start_time.slice(0, 5)} - {schedule.end_time.slice(0, 5)}
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">No schedule registered yet</h3>
-                    <p className="text-gray-600 text-sm">Click "Register Schedule" to set up your work hours.</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                    <div className="flex items-center justify-between text-sm text-muted-foreground">
+                      <span>Tối đa: {schedule.max_patients} bệnh nhân</span>
+                      <Badge variant={schedule.is_available ? "default" : "secondary"}>
+                        {schedule.is_available ? "Hoạt động" : "Tạm ngưng"}
+                      </Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           )}
         </div>
-      </main>
+      </div>
+
+      <AlertDialog open={deleteId !== null} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Bạn có chắc chắn muốn xóa?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Hành động này không thể hoàn tác. Lịch làm việc này sẽ bị xóa vĩnh viễn khỏi hệ thống.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Hủy bỏ</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmDelete} 
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Đang xóa..." : "Xóa lịch"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
-

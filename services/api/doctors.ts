@@ -1,8 +1,9 @@
 import apiClient from './axios-config';
 import { Doctor } from '@/types/doctor';
-import { Appointment } from '@/types/appointment'
+import { Appointment } from '@/types/appointment';
 
-interface DoctorAPIResponse {
+// Kiểu dữ liệu đúng với API backend /api/doctors/
+export interface DoctorAPIResponse {
   id: number;
   user: {
     username: string;
@@ -15,8 +16,8 @@ interface DoctorAPIResponse {
     date_joined: string;
     is_active: boolean;
   };
-  specialty: string | null;
-  room: string | null;
+  specialty: number | null;
+  room: number | null;
   price: number;
   experience: number | null;
   credentiaUrl: string | null;
@@ -28,46 +29,29 @@ interface DoctorAPIResponse {
 
 const transformDoctorData = (apiDoctor: DoctorAPIResponse): Doctor => {
   return {
-    id: apiDoctor.id, // User.id is number
-    username: apiDoctor.user.username,
-    email: apiDoctor.user.email,
-    first_name: apiDoctor.user.first_name,
-    last_name: apiDoctor.user.last_name,
-    phone: apiDoctor.user.phone,
-    avatar: apiDoctor.user.avatar || undefined,
-    role: {
-      id: 2,
-      name: 'Doctor'
-    },
-    gender: {
-      id: 1,
-      name: 'Male' // Default, API không có gender
-    },
-    is_active: apiDoctor.user.is_active,
-    specialization: apiDoctor.specialty || 'General Practitioner',
-    experience: apiDoctor.experience || 0,
-    rating: 4.5, // Default rating, API không có
-    bio: apiDoctor.description || 'Experienced doctor providing quality healthcare services.',
-    workSchedule: {
-      Monday: [],
-      Tuesday: [],
-      Wednesday: [],
-      Thursday: [],
-      Friday: [],
-      Saturday: [],
-      Sunday: []
-    },
-    patients: 0 // Default, API không có
+    id: apiDoctor.id,
+    user: apiDoctor.user,
+    specialty: apiDoctor.specialty,
+    room: apiDoctor.room,
+    price: apiDoctor.price,
+    experience: apiDoctor.experience,
+    credentiaUrl: apiDoctor.credentiaUrl,
+    verificationStatus: apiDoctor.verificationStatus,
+    is_available: apiDoctor.is_available,
+    created_at: apiDoctor.created_at,
+    description: apiDoctor.description,
+
+    // Giá trị mặc định phục vụ hiển thị UI
+    rating: 4.5,
+    patients: 0,
   };
 };
 
-export const doctorsAPI = {
+export const doctorsApi = {
   getAll: async (): Promise<Doctor[]> => {
     try {
-      const response = await apiClient.get('/doctors');
+      const response = await apiClient.get('/doctors/');
       const apiDoctors: DoctorAPIResponse[] = response.data;
-      
-      // Transform API response to Doctor type
       return apiDoctors.map(transformDoctorData);
     } catch (error) {
       console.error('Error fetching doctors:', error);
@@ -77,7 +61,7 @@ export const doctorsAPI = {
 
   getById: async (id: string): Promise<Doctor | null> => {
     try {
-      const response = await apiClient.get(`/doctors/${id}`);
+      const response = await apiClient.get(`/doctors/${id}/`);
       const apiDoctor: DoctorAPIResponse = response.data;
       return transformDoctorData(apiDoctor);
     } catch (error) {
@@ -88,7 +72,7 @@ export const doctorsAPI = {
 
   getTopDoctors: async (limit: number = 3): Promise<Doctor[]> => {
     try {
-      const response = await apiClient.get(`/doctors/top?limit=${limit}`);
+      const response = await apiClient.get(`/doctors/top/?limit=${limit}`);
       const apiDoctors: DoctorAPIResponse[] = response.data;
       return apiDoctors.map(transformDoctorData);
     } catch (error) {
@@ -99,7 +83,7 @@ export const doctorsAPI = {
 
   updateWorkSchedule: async (doctorId: string, schedule: any) => {
     try {
-      const response = await apiClient.put(`/doctors/${doctorId}/schedule`, schedule);
+      const response = await apiClient.put(`/doctors/${doctorId}/schedule/`, schedule);
       return response.data;
     } catch (error) {
       console.error('Error updating schedule:', error);
@@ -109,7 +93,7 @@ export const doctorsAPI = {
 
   getAppointments: async (doctorId: string): Promise<Appointment[]> => {
     try {
-      const response = await apiClient.get(`/doctors/${doctorId}/appointments`);
+      const response = await apiClient.get(`/doctors/${doctorId}/appointments/`);
       return response.data;
     } catch (error) {
       console.error('Error fetching appointments:', error);

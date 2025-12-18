@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Menu, X, LogOut, Settings, Bell, Calendar } from "lucide-react";
+import { Menu, X, LogOut, Settings, Bell, Calendar, FileText } from "lucide-react";
 
 interface HeaderProps {
   isLoggedIn: boolean;
@@ -40,6 +40,12 @@ export function Header({ isLoggedIn, user, onLogout, onSignIn, onSignUp, hideMen
   const handleAppointmentsClick = () => {
     if (user?.role?.id === 3) {
       router.push("/patient/my-appointments");
+    }
+  };
+
+  const handleMedicalHistoryClick = () => {
+    if (user?.role?.id === 3) {
+      router.push("/patient/medical-history");
     }
   };
 
@@ -116,10 +122,16 @@ export function Header({ isLoggedIn, user, onLogout, onSignIn, onSignUp, hideMen
                     )}
                     
                     {user?.role?.id === 3 && (
-                      <DropdownMenuItem className="cursor-pointer" onClick={handleAppointmentsClick}>
-                        <Calendar className="w-4 h-4 mr-2" />
-                        My Appointments
-                      </DropdownMenuItem>
+                      <>
+                        <DropdownMenuItem className="cursor-pointer" onClick={handleAppointmentsClick}>
+                          <Calendar className="w-4 h-4 mr-2" />
+                          My Appointments
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="cursor-pointer" onClick={handleMedicalHistoryClick}>
+                          <FileText className="w-4 h-4 mr-2" />
+                          Medical History
+                        </DropdownMenuItem>
+                      </>
                     )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem className="cursor-pointer text-destructive" onClick={onLogout}>

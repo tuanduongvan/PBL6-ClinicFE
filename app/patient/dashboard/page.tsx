@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
@@ -11,19 +11,87 @@ import { BookingAppointmentModal } from '@/components/modals/booking-appointment
 import { useAuthContext } from '@/components/auth-provider';
 import { Doctor } from '@/types/doctor';
 import { Appointment } from '@/types/appointment'
-import { mockDoctors } from '@/data/mock-doctors';
-import { mockAppointments } from '@/data/mock-appointments';
+import { appointmentsAPI } from '@/services/api/appointments';
+import { notificationsAPI, Notification } from '@/services/api/notifications';
+import { doctorsApi } from '@/services/api/doctors';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
+
+const NOTIFICATION_POLL_INTERVAL = 5000; // 5 seconds
 
 export default function PatientDashboard() {
   const router = useRouter();
   const { user, isLoggedIn, logout, openSignIn, openSignUp } = useAuthContext();
+  const { toast } = useToast();
   const [topDoctors, setTopDoctors] = useState<Doctor[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const readNotificationIds = useRef<Set<number>>(new Set());
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const fetchAppointments = async () => {
+    try {
+      const data = await appointmentsAPI.getMyAppointments();
+      setAppointments(data);
+    } catch (error: any) {
+      console.error('Error fetching appointments:', error);
+    }
+  };
+
+  const fetchTopDoctors = async () => {
+    try {
+      const data = await doctorsApi.getTopDoctors(6);
+      setTopDoctors(data);
+    } catch (error) {
+      console.error('Error fetching top doctors:', error);
+    }
+  };
+
+  const checkNotifications = async () => {
+    try {
+      const notifications = await notificationsAPI.getMyNotifications();
+      const unreadNotifications = notifications.filter(
+        n => !n.is_read && !readNotificationIds.current.has(n.id)
+      );
+
+      for (const notification of unreadNotifications) {
+        readNotificationIds.current.add(notification.id);
+        
+        // Show toast based on notification type
+        if (notification.type === 'appointment_confirmed') {
+          toast({
+            title: 'Thành công',
+            description: notification.message || 'Lịch hẹn của bạn đã được bác sĩ xác nhận.',
+          });
+          // Refresh appointments
+          await fetchAppointments();
+        } else if (notification.type === 'appointment_rejected') {
+          toast({
+            variant: 'destructive',
+            title: 'Thông báo',
+            description: notification.message || 'Lịch hẹn của bạn không được chấp nhận, vui lòng chọn ca khác.',
+          });
+          // Refresh appointments
+          await fetchAppointments();
+        } else {
+          // Other notification types
+          toast({
+            title: 'Thông báo',
+            description: notification.message,
+          });
+        }
+
+        // Mark as read
+        await notificationsAPI.markAsRead(notification.id);
+      }
+    } catch (error) {
+      console.error('Error checking notifications:', error);
+    }
+  };
 
   useEffect(() => {
     setIsMounted(true);
@@ -33,32 +101,64 @@ export default function PatientDashboard() {
       return;
     }
 
-    // Load top doctors
-    setTopDoctors(mockDoctors);
-    
-    // Load patient's appointments
-    setAppointments(mockAppointments);
-  }, [isLoggedIn, router]);
+    // Initial load
+    const loadData = async () => {
+      setIsLoading(true);
+      await Promise.all([fetchAppointments(), fetchTopDoctors()]);
+      setIsLoading(false);
+    };
+
+    loadData();
+
+    // Start polling for notifications
+    pollingIntervalRef.current = setInterval(checkNotifications, NOTIFICATION_POLL_INTERVAL);
+
+    // Cleanup
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+      }
+    };
+  }, [isLoggedIn, user?.role?.id, router]);
 
   const handleBookDoctor = (doctor: Doctor) => {
     setSelectedDoctor(doctor);
     setIsBookingOpen(true);
   };
 
-  const handleCancelAppointment = (appointmentId: string) => {
-    setAppointments(prev => 
-      prev.map(apt => 
-        apt.id === appointmentId 
-          ? { ...apt, status: 'cancelled' as const }
-          : apt
-      )
-    );
+  const handleCancelAppointment = async (appointmentId: string | number) => {
+    try {
+      const success = await appointmentsAPI.cancel(Number(appointmentId));
+      if (success) {
+        await fetchAppointments();
+        toast({
+          title: 'Thành công',
+          description: 'Đã hủy lịch hẹn thành công.',
+        });
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.detail 
+        || error.response?.data?.message
+        || error.message
+        || 'Không thể hủy lịch hẹn. Vui lòng thử lại.';
+      
+      toast({
+        variant: 'destructive',
+        title: 'Lỗi',
+        description: errorMessage,
+      });
+    }
   };
 
-  const handleBookingSuccess = () => {
+  const handleBookingSuccess = async (appointmentData: Appointment) => {
     setIsBookingOpen(false);
     setSelectedDoctor(null);
-    router.push("/patient/my-appointments");
+    // Refresh appointments to show the new one
+    await fetchAppointments();
+    toast({
+      title: 'Thành công',
+      description: 'Đã đặt lịch hẹn thành công. Lịch hẹn đang chờ bác sĩ xác nhận.',
+    });
   };
 
   const handleBookingClose = () => {
@@ -101,10 +201,16 @@ export default function PatientDashboard() {
 
         {/* Appointments Section */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <PatientAppointmentsSection 
-            appointments={appointments}
-            onCancel={handleCancelAppointment}
-          />
+          {isLoading ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">Đang tải danh sách lịch hẹn...</p>
+            </div>
+          ) : (
+            <PatientAppointmentsSection 
+              appointments={appointments}
+              onCancel={handleCancelAppointment}
+            />
+          )}
         </section>
 
         {/* Top Doctors Section */}

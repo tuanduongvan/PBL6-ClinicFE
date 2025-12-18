@@ -56,7 +56,7 @@ export function RatingModal({
     e.preventDefault();
     
     if (rating === 0) {
-      setError('Please select a rating');
+      setError('Vui lòng chọn đánh giá');
       return;
     }
 
@@ -98,9 +98,11 @@ export function RatingModal({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Rate Doctor</DialogTitle>
+          <DialogTitle>Đánh giá Bác sĩ</DialogTitle>
           <DialogDescription>
-            Share your experience with {doctor ? `Dr. ${doctor.first_name} ${doctor.last_name}` : 'this doctor'}
+            Chia sẻ trải nghiệm của bạn với {doctor 
+              ? `BS. ${doctor.user?.first_name || doctor.first_name || ''} ${doctor.user?.last_name || doctor.last_name || ''}`
+              : 'bác sĩ này'}
           </DialogDescription>
         </DialogHeader>
 
@@ -116,20 +118,24 @@ export function RatingModal({
           {doctor && (
             <div className="flex gap-3 p-3 bg-secondary/30 rounded-lg">
               <img 
-                src={doctor.avatar || "/placeholder.svg"} 
-                alt={doctor.first_name}
+                src={doctor.user?.avatar || doctor.avatar || "/placeholder.svg"} 
+                alt={doctor.user?.first_name || doctor.first_name || 'Doctor'}
                 className="w-12 h-12 rounded-full object-cover"
               />
               <div>
-                <p className="font-semibold text-foreground">Dr. {doctor.first_name} {doctor.last_name}</p>
-                <p className="text-sm text-muted-foreground">{doctor.specialization}</p>
+                <p className="font-semibold text-foreground">
+                  BS. {doctor.user?.first_name || doctor.first_name || ''} {doctor.user?.last_name || doctor.last_name || ''}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {doctor.specialization || doctor.specialty?.name || 'Bác sĩ'}
+                </p>
               </div>
             </div>
           )}
 
           {/* Rating Stars */}
           <div className="space-y-2">
-            <Label>Rating</Label>
+            <Label>Đánh giá *</Label>
             <div className="flex items-center gap-2">
               {[1, 2, 3, 4, 5].map((value) => (
                 <button
@@ -160,10 +166,10 @@ export function RatingModal({
 
           {/* Comment */}
           <div className="space-y-2">
-            <Label htmlFor="comment">Your Review (Optional)</Label>
+            <Label htmlFor="comment">Nhận xét (Tùy chọn)</Label>
             <Textarea
               id="comment"
-              placeholder="Share your experience with this doctor..."
+              placeholder="Chia sẻ trải nghiệm của bạn với bác sĩ..."
               value={comment}
               onChange={handleCommentChange}
               disabled={isLoading}
@@ -180,7 +186,7 @@ export function RatingModal({
               onClick={handleClose}
               disabled={isLoading}
             >
-              Cancel
+              Hủy
             </Button>
             <Button 
               type="submit" 
@@ -190,10 +196,10 @@ export function RatingModal({
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Submitting...
+                  Đang gửi...
                 </>
               ) : (
-                'Submit Rating'
+                'Gửi đánh giá'
               )}
             </Button>
           </div>

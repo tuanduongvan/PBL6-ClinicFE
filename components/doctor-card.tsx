@@ -1,88 +1,97 @@
-"use client"
+"use client";
 
-import React from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import type { Doctor } from "@/types/doctor"
-import { Star, Users, Award } from "lucide-react"
+import { Doctor } from '@/types/doctor';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Star, MapPin, Stethoscope, Clock } from 'lucide-react';
+import Link from 'next/link';
 
 interface DoctorCardProps {
-  doctor: Doctor
-  onBooking?: () => void
+  doctor: Doctor;
+  onBooking?: () => void;
 }
 
 export function DoctorCard({ doctor, onBooking }: DoctorCardProps) {
-  const [isHovered, setIsHovered] = React.useState(false)
+  // Hỗ trợ cả dữ liệu từ backend (doctor.user) và dữ liệu mock (field phẳng)
+  const user = doctor.user || {
+    first_name: doctor.first_name || doctor.firstName || '',
+    last_name: doctor.last_name || doctor.lastName || '',
+    username: doctor.username || 'Bác sĩ',
+    avatar: doctor.avatar || null,
+    email: '',
+    phone: doctor.phone || '',
+    role: 2,
+    date_joined: '',
+    is_active: true,
+  };
+
+  const fullName =
+    (user.first_name || user.last_name)
+      ? `${user.first_name} ${user.last_name}`.trim()
+      : user.username || 'Bác sĩ';
+
+  const avatarSrc = user.avatar && user.avatar !== '' ? user.avatar : '/placeholder-user.jpg';
 
   return (
-    <Card
-      className="hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 overflow-hidden bg-background/50 backdrop-blur border-primary/10 cursor-pointer group"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <div className="relative overflow-hidden h-48 bg-gradient-to-br from-primary/10 to-accent/10">
-        <img
-          src={doctor.avatar || "/placeholder.svg"}
-          alt={`Dr. ${doctor.first_name} ${doctor.last_name}`}
-          className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
-        />
-        <div
-          className={`absolute inset-0 bg-gradient-to-t from-primary/30 via-transparent to-transparent transition-opacity duration-500 ${isHovered ? "opacity-100" : "opacity-0"}`}
-        />
-
-        <Badge className="absolute top-3 right-3 bg-primary text-primary-foreground animate-pulse">
-          {doctor.specialization}
-        </Badge>
-      </div>
-
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
+    <Card className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col h-full">
+      <CardContent className="p-0">
+        <div className="relative h-48 bg-muted">
+          <img
+            src={avatarSrc}
+            alt={fullName}
+            className="w-full h-full object-cover"
+          />
+          {doctor.is_available && (
+            <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full flex items-center">
+              <Clock className="w-3 h-3 mr-1" />
+              Sẵn sàng
+            </div>
+          )}
+        </div>
+        <div className="p-5 space-y-3">
           <div>
-            <CardTitle className="text-foreground group-hover:text-primary transition-colors duration-300">
-              Dr. {doctor.first_name} {doctor.last_name}
-            </CardTitle>
-            <CardDescription className="text-muted-foreground text-sm">
-              {doctor.experience} years experience
-            </CardDescription>
+            <h3 className="font-bold text-lg text-foreground">BS. {fullName}</h3>
+            <div className="flex items-center text-primary text-sm font-medium">
+              <Stethoscope className="w-4 h-4 mr-1" />
+              <span>
+                Chuyên khoa {doctor.specialization || (doctor.specialty ? `#${doctor.specialty}` : 'Tổng quát')}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex justify-between text-sm text-muted-foreground">
+            <div className="flex items-center">
+              <Star className="w-4 h-4 text-yellow-500 mr-1 fill-yellow-500" />
+              <span>
+                {doctor.rating || 0} ({doctor.patients || 0} bệnh nhân)
+              </span>
+            </div>
+            <div className="flex items-center">
+              <MapPin className="w-4 h-4 mr-1" />
+              <span>Phòng {doctor.room || '--'}</span>
+            </div>
+          </div>
+
+          <p className="text-sm text-muted-foreground line-clamp-2 min-h-[40px]">
+            {doctor.description || 'Bác sĩ chưa cập nhật thông tin giới thiệu.'}
+          </p>
+
+          <div className="font-semibold text-primary">
+            {(doctor.price || 0).toLocaleString()} VND{' '}
+            <span className="text-xs font-normal text-muted-foreground">/ lần khám</span>
           </div>
         </div>
-      </CardHeader>
-
-      <CardContent className="space-y-4">
-        <p className="text-sm text-muted-foreground line-clamp-2">{doctor.bio}</p>
-
-        <div className="grid grid-cols-3 gap-2 text-center">
-          <div className="bg-secondary/30 hover:bg-primary/20 rounded-lg p-2 transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-primary/20">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <Star className="w-4 h-4 text-accent animate-bounce" />
-              <span className="font-semibold text-foreground">{doctor.rating}</span>
-            </div>
-            <div className="text-xs text-muted-foreground">Rating</div>
-          </div>
-          <div className="bg-secondary/30 hover:bg-accent/20 rounded-lg p-2 transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-accent/20">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <Users className="w-4 h-4 text-primary" />
-              <span className="font-semibold text-foreground">{doctor.patients}</span>
-            </div>
-            <div className="text-xs text-muted-foreground">Patients</div>
-          </div>
-          <div className="bg-secondary/30 hover:bg-primary/20 rounded-lg p-2 transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-primary/20">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <Award className="w-4 h-4 text-accent" />
-              <span className="font-semibold text-foreground">{doctor.experience}</span>
-            </div>
-            <div className="text-xs text-muted-foreground">Years</div>
-          </div>
-        </div>
-
-        <Button
-          onClick={onBooking}
-          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-primary/30"
-        >
-          Book Appointment
-        </Button>
       </CardContent>
+      <CardFooter className="p-5 pt-0 mt-auto grid gap-2">
+        <Button className="w-full" onClick={onBooking}>
+          Đặt Lịch Ngay
+        </Button>
+        <Link href={`/patient/booking/${doctor.id}`} className="w-full">
+          <Button variant="outline" className="w-full">
+            Xem Chi Tiết
+          </Button>
+        </Link>
+      </CardFooter>
     </Card>
-  )
+  );
 }
