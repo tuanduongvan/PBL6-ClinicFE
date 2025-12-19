@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from 'next/navigation'; 
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,9 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Menu, X, LogOut, Settings, Bell, Calendar, FileText } from "lucide-react";
+import { Menu, X, LogOut, Settings, Calendar, FileText, Moon, Sun, Sparkles } from "lucide-react";
+import { NotificationCenter } from "@/components/notification-center";
+import { useTheme } from "next-themes";
 
 interface HeaderProps {
   isLoggedIn: boolean;
@@ -25,7 +27,13 @@ interface HeaderProps {
 
 export function Header({ isLoggedIn, user, onLogout, onSignIn, onSignUp, hideMenu = false }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const router = useRouter(); 
+  const [mounted, setMounted] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const router = useRouter();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []); 
 
   const closeMenu = () => setIsMenuOpen(false);
 
@@ -71,6 +79,18 @@ export function Header({ isLoggedIn, user, onLogout, onSignIn, onSignUp, hideMen
               <Link href="/services" className="text-foreground hover:text-primary transition">
                 Services
               </Link>
+              {isLoggedIn && user?.role?.id === 3 && (
+                <Link 
+                  href="/patient/skin-analysis" 
+                  className="text-foreground hover:text-primary transition flex items-center gap-1"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  Skin Analysis
+                </Link>
+              )}
+              <Link href="/about" className="text-foreground hover:text-primary transition">
+                About
+              </Link>
               <Link href="/contact" className="text-foreground hover:text-primary transition">
                 Contact
               </Link>
@@ -88,11 +108,21 @@ export function Header({ isLoggedIn, user, onLogout, onSignIn, onSignUp, hideMen
                 </Button>
               </>
             ) : (
-              <div className="flex items-center gap-4">
-                <button className="relative p-2 hover:bg-secondary rounded-lg transition">
-                  <Bell className="w-5 h-5" />
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                </button>
+              <div className="flex items-center gap-2">
+                {isLoggedIn && user?.id && <NotificationCenter userId={user.id} />}
+                
+                {mounted && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                    className="relative"
+                  >
+                    <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                    <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                    <span className="sr-only">Toggle theme</span>
+                  </Button>
+                )}
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -131,6 +161,13 @@ export function Header({ isLoggedIn, user, onLogout, onSignIn, onSignUp, hideMen
                           <FileText className="w-4 h-4 mr-2" />
                           Medical History
                         </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          className="cursor-pointer" 
+                          onClick={() => router.push('/patient/skin-analysis')}
+                        >
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          Skin Analysis
+                        </DropdownMenuItem>
                       </>
                     )}
                     <DropdownMenuSeparator />
@@ -159,6 +196,22 @@ export function Header({ isLoggedIn, user, onLogout, onSignIn, onSignUp, hideMen
             </Link>
             <Link href="/services" onClick={closeMenu} className="block px-4 py-2 hover:bg-secondary rounded-lg">
               Services
+            </Link>
+            {isLoggedIn && user?.role?.id === 3 && (
+              <Link 
+                href="/patient/skin-analysis" 
+                onClick={closeMenu} 
+                className="block px-4 py-2 hover:bg-secondary rounded-lg flex items-center gap-2"
+              >
+                <Sparkles className="w-4 h-4" />
+                Skin Analysis
+              </Link>
+            )}
+            <Link href="/about" onClick={closeMenu} className="block px-4 py-2 hover:bg-secondary rounded-lg">
+              About
+            </Link>
+            <Link href="/faq" onClick={closeMenu} className="block px-4 py-2 hover:bg-secondary rounded-lg">
+              FAQ
             </Link>
             <Link href="/contact" onClick={closeMenu} className="block px-4 py-2 hover:bg-secondary rounded-lg">
               Contact

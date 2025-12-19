@@ -8,6 +8,7 @@ import { HeroSection } from '@/components/hero-section';
 import { ServicesSection } from '@/components/services-section';
 import { TestimonialsSection } from '@/components/testimonials-section';
 import { TopDoctorsSection } from '@/components/top-doctors-section';
+import { SkinAnalysisSection } from '@/components/skin-analysis-section';
 import { BookingAppointmentModal } from '@/components/modals/booking-appointment-modal';
 import { useAuthContext } from '@/components/auth-provider';
 import { mockDoctors } from '@/data/mock-doctors';
@@ -96,6 +97,7 @@ export default function Home() {
 
         {isLoggedIn && user?.role.id === 3 ? (
           <>
+            <SkinAnalysisSection />
             <TopDoctorsSection 
               doctors={mockDoctors}
               onBookDoctor={handleBookDoctor}
@@ -104,6 +106,7 @@ export default function Home() {
           </>
         ) : (
           <>
+            <SkinAnalysisSection />
             <ServicesSection />
             <TestimonialsSection />
           </>

@@ -6,6 +6,7 @@ import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { TopDoctorsSection } from '@/components/top-doctors-section';
 import { PatientAppointmentsSection } from '@/components/patient-appointments-section';
+import { PatientStatsCard } from '@/components/patient-stats-card';
 import { ServicesSection } from '@/components/services-section';
 import { BookingAppointmentModal } from '@/components/modals/booking-appointment-modal';
 import { useAuthContext } from '@/components/auth-provider';
@@ -52,6 +53,11 @@ export default function PatientDashboard() {
   };
 
   const checkNotifications = async () => {
+    // Don't check notifications if user is not logged in
+    if (!isLoggedIn) {
+      return;
+    }
+    
     try {
       const notifications = await notificationsAPI.getMyNotifications();
       const unreadNotifications = notifications.filter(
@@ -88,7 +94,11 @@ export default function PatientDashboard() {
         // Mark as read
         await notificationsAPI.markAsRead(notification.id);
       }
-    } catch (error) {
+    } catch (error: any) {
+      // Ignore aborted requests
+      if (error?.code === 'ERR_CANCELED' || error?.message === 'Request aborted' || error?.name === 'AbortError') {
+        return;
+      }
       console.error('Error checking notifications:', error);
     }
   };
@@ -197,6 +207,11 @@ export default function PatientDashboard() {
               </Button>
             </div>
           </div>
+        </section>
+
+        {/* Statistics Section */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {!isLoading && <PatientStatsCard appointments={appointments} />}
         </section>
 
         {/* Appointments Section */}

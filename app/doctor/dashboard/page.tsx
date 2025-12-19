@@ -201,6 +201,7 @@ export default function DoctorDashboard() {
             totalPatients={new Set(appointments.map(a => a.patient?.id).filter(Boolean)).size}
             rating={0}
             availableHours={40}
+            appointments={appointments}
           />
         </section>
 

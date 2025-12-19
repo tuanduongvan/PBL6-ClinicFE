@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { AuthProvider } from '@/components/auth-provider' // Điều chỉnh đường dẫn nếu cần
+import { ThemeProvider } from '@/components/theme-provider'
+import { FloatingSkinAnalysis } from '@/components/floating-skin-analysis'
 import { Toaster } from '@/components/ui/toaster'
 import './globals.css'
 
@@ -44,11 +46,19 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${geist.variable} ${geistMono.variable} font-sans antialiased`}>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AuthProvider>
+            {children}
+            <FloatingSkinAnalysis />
+          </AuthProvider>
+        </ThemeProvider>
         <Toaster />
         <Analytics />
       </body>

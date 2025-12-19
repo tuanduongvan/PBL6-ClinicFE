@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ArrowRight } from "lucide-react"
+import { ArrowRight, Sparkles } from "lucide-react"
 import { useEffect, useState } from "react"
 
 interface HeroSectionProps {
@@ -35,49 +35,49 @@ export function HeroSection({ onBooking, isLoggedIn }: HeroSectionProps) {
             className={`space-y-6 transition-all duration-1000 ${isAnimated ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10"}`}
           >
             <div className="inline-block">
-              <span className="px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium">
-                Professional Dermatology Care
+              <span className="px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium animate-fade-in">
+                Chăm sóc da liễu chuyên nghiệp
               </span>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight text-balance">
-              Your Healthy Skin Starts Here
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight text-balance animate-slide-up">
+              Làn da khỏe mạnh bắt đầu từ đây
             </h1>
 
-            <p className="text-lg text-muted-foreground max-w-xl text-balance">
-              Expert dermatologists providing personalized skincare solutions. Book your appointment with our top-rated
-              doctors today.
+            <p className="text-lg text-muted-foreground max-w-xl text-balance animate-fade-in delay-200">
+              Đội ngũ bác sĩ da liễu chuyên nghiệp cung cấp giải pháp chăm sóc da cá nhân hóa. 
+              Đặt lịch hẹn với các bác sĩ được đánh giá cao của chúng tôi ngay hôm nay.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
-              <Button onClick={onBooking} className="bg-primary hover:bg-primary/90 text-primary-foreground group">
-                Book Appointment
+              <Button onClick={onBooking} className="bg-primary hover:bg-primary/90 text-primary-foreground group text-base px-8 py-6 h-auto">
+                Đặt lịch hẹn ngay
                 <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Button>
               <Button
                 variant="outline"
-                className="border-primary text-primary hover:bg-primary/10 bg-transparent"
+                className="border-primary text-primary hover:bg-primary/10 bg-transparent text-base px-8 py-6 h-auto"
                 onClick={() => {
                   document.getElementById("services-section")?.scrollIntoView({ behavior: "smooth" })
                 }}
               >
-                Learn More
+                Tìm hiểu thêm
               </Button>
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-4 pt-8">
-              <div>
-                <div className="text-2xl font-bold text-primary">500+</div>
-                <div className="text-sm text-muted-foreground">Happy Patients</div>
+            <div className="grid grid-cols-3 gap-6 pt-8">
+              <div className="animate-fade-in delay-300">
+                <div className="text-3xl font-bold text-primary mb-1">500+</div>
+                <div className="text-sm text-muted-foreground">Bệnh nhân hài lòng</div>
               </div>
-              <div>
-                <div className="text-2xl font-bold text-primary">15+</div>
-                <div className="text-sm text-muted-foreground">Expert Doctors</div>
+              <div className="animate-fade-in delay-400">
+                <div className="text-3xl font-bold text-primary mb-1">15+</div>
+                <div className="text-sm text-muted-foreground">Bác sĩ chuyên khoa</div>
               </div>
-              <div>
-                <div className="text-2xl font-bold text-primary">4.8★</div>
-                <div className="text-sm text-muted-foreground">Rating</div>
+              <div className="animate-fade-in delay-500">
+                <div className="text-3xl font-bold text-primary mb-1">4.8★</div>
+                <div className="text-sm text-muted-foreground">Đánh giá trung bình</div>
               </div>
             </div>
           </div>

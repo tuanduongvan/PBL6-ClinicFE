@@ -70,6 +70,11 @@ export default function MyAppointmentsPage() {
   }
 
   const checkNotifications = async () => {
+    // Don't check notifications if user is not logged in
+    if (!isLoggedIn) {
+      return
+    }
+    
     try {
       const notifications = await notificationsAPI.getMyNotifications()
       const unreadNotifications = notifications.filter(
@@ -106,7 +111,11 @@ export default function MyAppointmentsPage() {
         // Mark as read
         await notificationsAPI.markAsRead(notification.id)
       }
-    } catch (error) {
+    } catch (error: any) {
+      // Ignore aborted requests
+      if (error?.code === 'ERR_CANCELED' || error?.message === 'Request aborted' || error?.name === 'AbortError') {
+        return
+      }
       console.error('Error checking notifications:', error)
     }
   }
@@ -131,7 +140,7 @@ export default function MyAppointmentsPage() {
         clearInterval(pollingIntervalRef.current)
       }
     }
-  }, [isLoggedIn, user?.role?.id, router])
+  }, [isLoggedIn, user?.role?.id])
 
   if (!isMounted) return null
 

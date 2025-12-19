@@ -41,6 +41,20 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
+    // Ignore aborted and network errors - let them be handled by individual API calls
+    if (
+      error.code === 'ERR_CANCELED' || 
+      error.code === 'ERR_NETWORK' ||
+      error.code === 'ECONNABORTED' ||
+      error.message === 'Request aborted' || 
+      error.message === 'Network Error' ||
+      error.name === 'AbortError' ||
+      error.name === 'NetworkError' ||
+      !error.response // Network errors typically don't have a response
+    ) {
+      return Promise.reject(error);
+    }
+
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
     };

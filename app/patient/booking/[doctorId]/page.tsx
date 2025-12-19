@@ -127,11 +127,41 @@ export default function BookingPage() {
                 </div>
               </div>
 
-              <div className="p-6 sm:p-8">
+              <div className="p-6 sm:p-8 space-y-6">
+                <div>
                 <h3 className="text-lg font-semibold mb-3">Giới thiệu</h3>
                 <p className="text-muted-foreground leading-relaxed">
                   {doctor.description || "Bác sĩ chưa cập nhật thông tin giới thiệu."}
                 </p>
+                </div>
+
+                {/* Statistics */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary mb-1">
+                      {doctor.rating || 0}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Đánh giá</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary mb-1">
+                      {doctor.patients || 0}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Bệnh nhân</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary mb-1">
+                      {doctor.experience || 0}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Năm kinh nghiệm</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary mb-1">
+                      {doctor.is_available ? 'Có' : 'Không'}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Sẵn sàng</div>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
