@@ -287,3 +287,4 @@ function getRecommendations(label: string, confidence: number): string[] {
   return specificRecommendations[label] || baseRecommendations;
 }
 
+//sadasdádsad
