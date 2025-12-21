@@ -17,7 +17,7 @@ const processQueue = (error: any, token: string | null = null) => {
 const apiClient = axios.create({
   baseURL:
     process.env.NEXT_PUBLIC_API_BASE_URL ||
-    'https://performances-telling-personalized-haven.trycloudflare.com/api',
+    'https://own-solo-engaging-borders.trycloudflare.com/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -90,7 +90,7 @@ apiClient.interceptors.response.use(
         const response = await axios.post(
           `${
             process.env.NEXT_PUBLIC_API_BASE_URL ||
-            'https://performances-telling-personalized-haven.trycloudflare.com/api'
+            'https://own-solo-engaging-borders.trycloudflare.com/api'
           }/accounts/refresh/`,
           { refresh: refreshToken }
         );
