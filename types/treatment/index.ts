@@ -4,6 +4,19 @@ export interface Drug {
   description?: string;
 }
 
+export type TimingType = 'before' | 'after' | 'with' | 'anytime';
+
+export interface TreatmentDrug {
+  id?: number;
+  drug?: Drug | null;
+  drug_id?: number | null;
+  dosage: string;
+  timing: TimingType;
+  minutes_before_after?: number | null;
+  notes?: string | null;
+  order?: number;
+}
+
 export interface Treatment {
   id: number;
   appointment: {
@@ -27,9 +40,10 @@ export interface Treatment {
   };
   name: string;
   purpose: string;
-  drug?: Drug | null;
-  dosage?: string;
+  drugs?: TreatmentDrug[];
   repeat_days?: string;
   repeat_time?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 

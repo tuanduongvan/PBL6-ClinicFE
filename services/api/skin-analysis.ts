@@ -6,6 +6,7 @@ export interface AnalysisResult {
   description: string;
   recommendations: string[];
   severity: 'mild' | 'moderate' | 'severe';
+  image?: string; // Ảnh được trả về từ API (base64 hoặc URL)
 }
 
 // Interface cho response từ server detect API
@@ -171,12 +172,27 @@ export const skinAnalysisAPI = {
         // Generate recommendations dựa trên label
         const recommendations = getRecommendations(label, topResult.score);
 
+        // Chuyển đổi ảnh từ API response sang data URL nếu cần
+        let imageUrl: string | undefined;
+        if (data.image) {
+          // Nếu ảnh là base64 string, chuyển thành data URL
+          if (data.image.startsWith('data:')) {
+            imageUrl = data.image;
+          } else if (data.image.startsWith('http://') || data.image.startsWith('https://')) {
+            imageUrl = data.image;
+          } else {
+            // Nếu là base64 string không có prefix, thêm prefix
+            imageUrl = `data:image/jpeg;base64,${data.image}`;
+          }
+        }
+
         return {
           condition: label, // Hiển thị trực tiếp label từ API
           confidence: topResult.score,
           description: conditionInfo.description,
           recommendations,
           severity: conditionInfo.severity,
+          image: imageUrl, // Ảnh được trả về từ API
         };
       }
 

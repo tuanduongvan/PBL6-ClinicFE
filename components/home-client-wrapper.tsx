@@ -29,9 +29,16 @@ export function HomeClientWrapper({ initialUser }: HomeClientWrapperProps) {
   useEffect(() => {
     setIsMounted(true)
     
-    // Auto-redirect doctors to their dashboard
-    if (isLoggedIn && user?.role.id === 2) {
-      router.push('/doctor/dashboard')
+    // Auto-redirect based on user role
+    if (isLoggedIn) {
+      if (user?.role.id === 1) {
+        // Admin - redirect to admin dashboard
+        router.push('/admin')
+      } else if (user?.role.id === 2) {
+        // Doctor - redirect to doctor dashboard
+        router.push('/doctor/dashboard')
+      }
+      // Patient (role ID 3) stays on home page
     }
   }, [isLoggedIn, user?.role.id, router])
 

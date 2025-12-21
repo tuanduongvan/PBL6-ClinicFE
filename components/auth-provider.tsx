@@ -33,9 +33,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
     
-    // Auto-redirect doctors to their dashboard (only if shouldRedirect is true)
-    if (shouldRedirect && userData.role.id === 2) {
-      window.location.href = '/doctor/dashboard';
+    // Auto-redirect based on user role (only if shouldRedirect is true)
+    if (shouldRedirect) {
+      if (userData.role.id === 1) {
+        // Admin - redirect to admin dashboard
+        window.location.href = '/admin';
+      } else if (userData.role.id === 2) {
+        // Doctor - redirect to doctor dashboard
+        window.location.href = '/doctor/dashboard';
+      }
+      // Patient (role ID 3) stays on current page
     }
   };
 

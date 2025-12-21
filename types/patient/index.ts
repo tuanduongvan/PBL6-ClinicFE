@@ -5,5 +5,7 @@ export interface Patient extends User {
     id: 3;
     name: 'Patient'; 
   };
-  medicalHistory?: string;
+  health_insurance_number?: string | null;
+  occupation?: string | null;
+  medical_history?: string | null;
 }

@@ -29,11 +29,13 @@ export interface Rating {
 
 export interface RatingListItem {
   id: number;
+  appointment: number; // Appointment ID
   rating: number;
   comment?: string | null;
   patient_name: string;
   patient_avatar?: string | null;
   created_at: string;
+  appointmentDetails?: any; // Enriched appointment data from frontend
 }
 
 export interface RatingStatistics {

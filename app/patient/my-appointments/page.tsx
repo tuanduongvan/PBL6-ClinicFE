@@ -15,10 +15,14 @@ import { RescheduleAppointmentModal } from "@/components/modals/reschedule-appoi
 import { appointmentsAPI } from "@/services/api/appointments"
 import { ratingsAPI } from "@/services/api/ratings"
 import { notificationsAPI, Notification } from "@/services/api/notifications"
+import { treatmentsAPI } from "@/services/api/treatments"
+import { recordsAPI } from "@/services/api/records"
 import { useToast } from "@/hooks/use-toast"
 import { Appointment } from "@/types/appointment"
 import { Doctor } from "@/types/doctor"
 import { Rating } from "@/types/rating"
+import { Treatment } from "@/types/treatment"
+import { AppointmentRecord } from "@/types/record"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,7 +33,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Calendar, Clock, CheckCircle2, AlertCircle, Loader2, Star, XCircle, User } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Calendar, Clock, CheckCircle2, AlertCircle, Loader2, Star, XCircle, User, Pill, FileText, Eye } from "lucide-react"
 
 const NOTIFICATION_POLL_INTERVAL = 5000; // 5 seconds
 
@@ -50,6 +61,14 @@ export default function MyAppointmentsPage() {
   const [cancelingId, setCancelingId] = useState<number | null>(null)
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
   const [appointmentToCancel, setAppointmentToCancel] = useState<Appointment | null>(null)
+  const [prescriptionModalOpen, setPrescriptionModalOpen] = useState(false)
+  const [recordModalOpen, setRecordModalOpen] = useState(false)
+  const [selectedAppointmentForPrescription, setSelectedAppointmentForPrescription] = useState<Appointment | null>(null)
+  const [selectedAppointmentForRecord, setSelectedAppointmentForRecord] = useState<Appointment | null>(null)
+  const [treatments, setTreatments] = useState<Treatment[]>([])
+  const [record, setRecord] = useState<AppointmentRecord | null>(null)
+  const [loadingTreatments, setLoadingTreatments] = useState(false)
+  const [loadingRecord, setLoadingRecord] = useState(false)
   const readNotificationIds = useRef<Set<number>>(new Set())
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -247,7 +266,7 @@ export default function MyAppointmentsPage() {
   // Helper function to check if appointment can be cancelled
   const canCancelAppointment = (appointment: Appointment): { canCancel: boolean; reason?: string } => {
     // Cannot cancel if already completed or canceled
-    if (appointment.status === 'completed' || appointment.status === 'canceled' || appointment.status === 'cancelled') {
+    if (appointment.status === 'completed' || appointment.status === 'canceled') {
       return { canCancel: false, reason: 'Không thể hủy lịch hẹn đã hoàn thành hoặc đã hủy.' }
     }
 
@@ -330,7 +349,8 @@ export default function MyAppointmentsPage() {
     if (!appointment.doctor) return null
     return {
       id: appointment.doctor.id,
-      user: appointment.doctor.user,
+      // user field is omitted since Appointment.doctor.user only has partial user data
+      // and Doctor.user requires full User object with all properties
       specialty: appointment.doctor.specialty?.id || null,
       specialization: appointment.doctor.specialty?.name,
       price: appointment.doctor.price,
@@ -479,6 +499,60 @@ export default function MyAppointmentsPage() {
     setAppointmentToReschedule(null)
   }
 
+  const handleViewPrescription = async (appointment: Appointment) => {
+    setSelectedAppointmentForPrescription(appointment)
+    setLoadingTreatments(true)
+    setPrescriptionModalOpen(true)
+    
+    try {
+      const treatmentsData = await treatmentsAPI.getByAppointment(appointment.id)
+      setTreatments(treatmentsData)
+      if (treatmentsData.length === 0) {
+        toast({
+          title: 'Thông báo',
+          description: 'Chưa có đơn thuốc cho lịch hẹn này.',
+        })
+      }
+    } catch (error: any) {
+      console.error('Error fetching treatments:', error)
+      toast({
+        variant: 'destructive',
+        title: 'Lỗi',
+        description: 'Không thể tải đơn thuốc. Vui lòng thử lại.',
+      })
+      setTreatments([])
+    } finally {
+      setLoadingTreatments(false)
+    }
+  }
+
+  const handleViewRecord = async (appointment: Appointment) => {
+    setSelectedAppointmentForRecord(appointment)
+    setLoadingRecord(true)
+    setRecordModalOpen(true)
+    
+    try {
+      const recordData = await recordsAPI.getByAppointment(appointment.id)
+      setRecord(recordData)
+      if (!recordData) {
+        toast({
+          title: 'Thông báo',
+          description: 'Chưa có kết quả thăm khám cho lịch hẹn này.',
+        })
+      }
+    } catch (error: any) {
+      console.error('Error fetching record:', error)
+      toast({
+        variant: 'destructive',
+        title: 'Lỗi',
+        description: 'Không thể tải kết quả thăm khám. Vui lòng thử lại.',
+      })
+      setRecord(null)
+    } finally {
+      setLoadingRecord(false)
+    }
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header isLoggedIn={isLoggedIn} user={user} onLogout={logout} onSignIn={openSignIn} onSignUp={openSignUp} />
@@ -581,6 +655,28 @@ export default function MyAppointmentsPage() {
                                   Đánh giá
                                 </Button>
                               )
+                            )}
+                            {appointment.status === "completed" && (
+                              <div className="flex flex-col gap-2 w-full">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleViewPrescription(appointment)}
+                                  className="flex items-center gap-1 w-full"
+                                >
+                                  <Pill className="w-4 h-4" />
+                                  Xem đơn thuốc
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleViewRecord(appointment)}
+                                  className="flex items-center gap-1 w-full"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                  Chi tiết
+                                </Button>
+                              </div>
                             )}
                             <div className="flex flex-col gap-2">
                               {(appointment.status === "accepted" || appointment.status === "confirmed") && doctor && (
@@ -689,6 +785,171 @@ export default function MyAppointmentsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Prescription Modal */}
+      <Dialog open={prescriptionModalOpen} onOpenChange={setPrescriptionModalOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Pill className="w-5 h-5 text-primary" />
+              Đơn thuốc
+            </DialogTitle>
+            <DialogDescription>
+              {selectedAppointmentForPrescription && (
+                <>
+                  Lịch hẹn ngày {formatDateTime(selectedAppointmentForPrescription).date} lúc {formatDateTime(selectedAppointmentForPrescription).time}
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {loadingTreatments ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            </div>
+          ) : treatments.length === 0 ? (
+            <div className="py-8 text-center text-muted-foreground">
+              Chưa có đơn thuốc cho lịch hẹn này.
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {treatments.map((treatment) => (
+                <Card key={treatment.id}>
+                  <CardContent className="pt-6">
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="text-lg font-semibold text-foreground mb-1">
+                          {treatment.name}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          <span className="font-medium">Mục đích:</span> {treatment.purpose}
+                        </p>
+                      </div>
+
+                      {treatment.drugs && treatment.drugs.length > 0 && (
+                        <div className="space-y-3">
+                          <h4 className="font-medium text-foreground">Danh sách thuốc:</h4>
+                          <div className="space-y-2">
+                            {treatment.drugs.map((drugItem, index) => (
+                              <div key={drugItem.id || index} className="border rounded-lg p-4 bg-muted/50">
+                                <div className="flex items-start justify-between gap-4">
+                                  <div className="flex-1 space-y-1">
+                                    <div className="flex items-center gap-2">
+                                      <Pill className="w-4 h-4 text-primary" />
+                                      <span className="font-medium text-foreground">
+                                        {drugItem.drug?.name || 'Thuốc không xác định'}
+                                      </span>
+                                    </div>
+                                    {drugItem.drug?.description && (
+                                      <p className="text-sm text-muted-foreground">
+                                        {drugItem.drug.description}
+                                      </p>
+                                    )}
+                                    <div className="flex flex-wrap gap-2 text-sm">
+                                      <Badge variant="outline">
+                                        Liều lượng: {drugItem.dosage}
+                                      </Badge>
+                                      <Badge variant="outline">
+                                        {drugItem.timing === 'before' && 'Trước bữa ăn'}
+                                        {drugItem.timing === 'after' && 'Sau bữa ăn'}
+                                        {drugItem.timing === 'with' && 'Trong bữa ăn'}
+                                        {drugItem.timing === 'anytime' && 'Bất kỳ lúc nào'}
+                                        {drugItem.minutes_before_after && 
+                                          ` (${drugItem.minutes_before_after} phút)`}
+                                      </Badge>
+                                    </div>
+                                    {drugItem.notes && (
+                                      <p className="text-sm text-muted-foreground italic">
+                                        Ghi chú: {drugItem.notes}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {treatment.repeat_days && (
+                        <div className="text-sm text-muted-foreground">
+                          <span className="font-medium">Lặp lại:</span> {treatment.repeat_days}
+                          {treatment.repeat_time && ` lúc ${treatment.repeat_time}`}
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Record Modal */}
+      <Dialog open={recordModalOpen} onOpenChange={setRecordModalOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5 text-primary" />
+              Kết quả thăm khám
+            </DialogTitle>
+            <DialogDescription>
+              {selectedAppointmentForRecord && (
+                <>
+                  Lịch hẹn ngày {formatDateTime(selectedAppointmentForRecord).date} lúc {formatDateTime(selectedAppointmentForRecord).time}
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {loadingRecord ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            </div>
+          ) : !record ? (
+            <div className="py-8 text-center text-muted-foreground">
+              Chưa có kết quả thăm khám cho lịch hẹn này.
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="space-y-4">
+                    {record.reason && (
+                      <div>
+                        <h4 className="font-medium text-foreground mb-2">Lý do khám:</h4>
+                        <p className="text-sm text-muted-foreground">{record.reason}</p>
+                      </div>
+                    )}
+
+                    {record.description && (
+                      <div>
+                        <h4 className="font-medium text-foreground mb-2">Mô tả:</h4>
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{record.description}</p>
+                      </div>
+                    )}
+
+                    {record.status_before && (
+                      <div>
+                        <h4 className="font-medium text-foreground mb-2">Tình trạng trước khám:</h4>
+                        <p className="text-sm text-muted-foreground">{record.status_before}</p>
+                      </div>
+                    )}
+
+                    {record.status_after && (
+                      <div>
+                        <h4 className="font-medium text-foreground mb-2">Tình trạng sau khám:</h4>
+                        <p className="text-sm text-muted-foreground">{record.status_after}</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import apiClient from './axios-config';
-import { Treatment } from '@/types/treatment';
+import { Treatment, TreatmentDrug } from '@/types/treatment';
 
 export const treatmentsAPI = {
   // Lấy tất cả đơn thuốc của user hiện tại
@@ -29,8 +29,13 @@ export const treatmentsAPI = {
     appointment_id: number;
     name: string;
     purpose: string;
-    drug_id?: number | null;
-    dosage?: string;
+    drugs_data?: Array<{
+      drug_id?: number | null;
+      dosage: string;
+      timing: 'before' | 'after' | 'with' | 'anytime';
+      minutes_before_after?: number | null;
+      notes?: string;
+    }>;
     repeat_days?: string;
     repeat_time?: string;
   }): Promise<Treatment> => {
@@ -42,8 +47,13 @@ export const treatmentsAPI = {
   update: async (treatmentId: number, data: {
     name?: string;
     purpose?: string;
-    drug_id?: number | null;
-    dosage?: string;
+    drugs_data?: Array<{
+      drug_id?: number | null;
+      dosage: string;
+      timing: 'before' | 'after' | 'with' | 'anytime';
+      minutes_before_after?: number | null;
+      notes?: string;
+    }>;
     repeat_days?: string;
     repeat_time?: string;
   }): Promise<Treatment> => {

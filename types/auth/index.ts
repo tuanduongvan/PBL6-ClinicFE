@@ -25,6 +25,11 @@ export interface User {
   role: Role;
   is_active: boolean;
   avatar?: string;
+  birthday?: string | null;
+  address?: string | null;
+  cccd?: string | null;
+  ethinic_group?: string | null;
+  date_joined?: string;
 }
 
 export interface AuthSuccessResponse {

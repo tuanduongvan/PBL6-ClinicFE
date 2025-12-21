@@ -282,8 +282,8 @@ export function FloatingSkinAnalysis() {
               ) : (
                 <div className="relative">
                   <img
-                    src={selectedImage}
-                    alt="Selected skin"
+                    src={analysisResult?.image || selectedImage}
+                    alt={analysisResult ? "Analyzed skin result" : "Selected skin"}
                     className="w-full h-auto rounded-lg border border-border"
                   />
                   <Button

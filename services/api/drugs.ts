@@ -7,7 +7,12 @@ export const drugsAPI = {
     try {
       const response = await apiClient.get('/drugs/');
       return response.data as Drug[];
-    } catch (error) {
+    } catch (error: any) {
+      // Silently handle 404 - drugs API endpoint not implemented yet
+      if (error.response?.status === 404) {
+        // Endpoint not available yet, return empty array
+        return [];
+      }
       console.error('Error fetching drugs:', error);
       return [];
     }
@@ -20,7 +25,11 @@ export const drugsAPI = {
         params: { search: query },
       });
       return response.data as Drug[];
-    } catch (error) {
+    } catch (error: any) {
+      // Silently handle 404 - drugs API endpoint not implemented yet
+      if (error.response?.status === 404) {
+        return [];
+      }
       console.error('Error searching drugs:', error);
       return [];
     }
@@ -31,7 +40,11 @@ export const drugsAPI = {
     try {
       const response = await apiClient.get(`/drugs/${drugId}/`);
       return response.data as Drug;
-    } catch (error) {
+    } catch (error: any) {
+      // Silently handle 404 - drugs API endpoint not implemented yet
+      if (error.response?.status === 404) {
+        return null;
+      }
       console.error('Error fetching drug:', error);
       return null;
     }
