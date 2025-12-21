@@ -68,7 +68,6 @@ export function BookingAppointmentModal({
       };
 
       const result = await appointmentsAPI.create(payload);
-      // Appointment được tạo với status PENDING mặc định từ backend
       onSuccess?.(result);
       handleClose();
 
@@ -98,7 +97,7 @@ export function BookingAppointmentModal({
         <DialogHeader>
           <DialogTitle>Đặt Lịch Khám</DialogTitle>
           <DialogDescription>
-            {doctor && `Đặt lịch với Bác sĩ ${doctor.user.first_name} ${doctor.user.last_name}`}
+            {doctor && doctor.user && `Đặt lịch với Bác sĩ ${doctor.user.first_name} ${doctor.user.last_name}`}
           </DialogDescription>
         </DialogHeader>
 
@@ -111,11 +110,11 @@ export function BookingAppointmentModal({
           )}
 
           {/* Doctor Info Mini - Cập nhật truy cập nested object */}
-          {doctor && (
+          {doctor && doctor.user && (
             <div className="flex gap-3 p-3 bg-secondary/30 rounded-lg items-center">
               <img 
                 src={doctor.user.avatar || "/placeholder-user.jpg"} 
-                alt={doctor.user.first_name}
+                alt={doctor.user.first_name || "Doctor"}
                 className="w-12 h-12 rounded-full object-cover"
               />
               <div>

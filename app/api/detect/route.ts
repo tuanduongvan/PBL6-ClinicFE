@@ -12,7 +12,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Gọi API detect từ server (server-side không bị CORS)
     const detectAPIUrl = process.env.DETECT_API_URL || 'http://3.106.197.67:8000/detect';
     
     const response = await fetch(detectAPIUrl, {
@@ -35,7 +34,6 @@ export async function POST(request: NextRequest) {
 
     const data = await response.json();
 
-    // Trả về response với CORS headers
     return NextResponse.json(data, {
       status: 200,
       headers: {
@@ -53,7 +51,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Handle OPTIONS request for CORS preflight
 export async function OPTIONS() {
   return NextResponse.json({}, {
     status: 200,

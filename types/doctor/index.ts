@@ -10,7 +10,6 @@ import { User } from '@/types/auth';
 export interface Doctor {
   id: number;
 
-  // Dữ liệu từ backend: /api/doctors/
   user?: {
     username: string;
     email: string;

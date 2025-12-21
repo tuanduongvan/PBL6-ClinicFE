@@ -54,6 +54,41 @@ export interface RegisterCredentials {
   avatar?: string;
 }
 
+export interface PatientRegisterPayload {
+  username: string;
+  password: string;
+  password_confirm: string;
+  phone: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  gender: UserGenderID;
+  role: 3; // Patient role is always 3
+  avatar?: string;
+}
+
+export interface DoctorRegisterPayload {
+  // User account fields
+  username: string;
+  password: string;
+  password_confirm: string;
+  phone: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  gender: UserGenderID;
+  role?: 2; // Doctor role is optional (backend automatically sets it to 2)
+  
+  // Doctor-specific fields
+  specialty: number;
+  room?: number | null;
+  price: number;
+  experience?: number | null;
+  medicalLicenseUrl?: string | null;
+  currentWorkplace?: string | null;
+  bio?: string | null;
+}
+
 export interface AuthValidationErrorResponse {
   message: string;
   errors: {

@@ -1,26 +1,47 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
-import { AuthProvider } from '@/components/auth-provider' // Điều chỉnh đường dẫn nếu cần
+import { AuthProvider } from '@/components/auth-provider'
 import { ThemeProvider } from '@/components/theme-provider'
-import { FloatingSkinAnalysis } from '@/components/floating-skin-analysis'
+import { FloatingActionGroup } from '@/components/floating-action-group'
 import { Toaster } from '@/components/ui/toaster'
 import './globals.css'
 
 const geist = Geist({ 
   subsets: ["latin"],
   variable: '--font-geist',
+  display: 'swap',
 })
 
 const geistMono = Geist_Mono({ 
   subsets: ["latin"],
   variable: '--font-geist-mono',
+  display: 'swap',
 })
 
 export const metadata: Metadata = {
-  title: 'Derma Clinic - Professional Skin Care Services',
-  description: 'Book your dermatology appointment online with our expert doctors',
-  generator: 'v0.app',
+  title: {
+    default: 'Derma Clinic - Professional Skin Care Services',
+    template: '%s | Derma Clinic',
+  },
+  description: 'Book your dermatology appointment online with our expert doctors. Professional skin care services with personalized treatment plans.',
+  keywords: ['dermatology', 'skin care', 'medical clinic', 'appointment booking', 'dermatologist'],
+  authors: [{ name: 'Derma Clinic' }],
+  creator: 'Derma Clinic',
+  publisher: 'Derma Clinic',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'),
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    siteName: 'Derma Clinic',
+    title: 'Derma Clinic - Professional Skin Care Services',
+    description: 'Book your dermatology appointment online with our expert doctors.',
+  },
   icons: {
     icon: [
       {
@@ -56,7 +77,7 @@ export default function RootLayout({
         >
           <AuthProvider>
             {children}
-            <FloatingSkinAnalysis />
+            <FloatingActionGroup />
           </AuthProvider>
         </ThemeProvider>
         <Toaster />

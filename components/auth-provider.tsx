@@ -8,7 +8,7 @@ import { User } from '@/types/auth';
 interface AuthContextType {
   user: User | null;
   isLoggedIn: boolean;
-  login: (user: User, token: string) => void;
+  login: (user: User, token: string, shouldRedirect?: boolean) => void;
   logout: () => void;
   openSignIn: () => void;
   openSignUp: () => void;
@@ -28,13 +28,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const login = (userData: User, token: string) => {
+  const login = (userData: User, token: string, shouldRedirect: boolean = true) => {
     localStorage.setItem('authToken', token);
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
     
-    // Auto-redirect doctors to their dashboard
-    if (userData.role.id === 2) {
+    // Auto-redirect doctors to their dashboard (only if shouldRedirect is true)
+    if (shouldRedirect && userData.role.id === 2) {
       window.location.href = '/doctor/dashboard';
     }
   };
