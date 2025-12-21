@@ -14,20 +14,26 @@ import { Textarea } from '@/components/ui/textarea';
 import { AlertCircle, Loader2, Star } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Doctor } from '@/types/doctor';
+import { Appointment } from '@/types/appointment';
+import { ratingsAPI } from '@/services/api/ratings';
+import { useToast } from '@/hooks/use-toast';
 
 interface RatingModalProps {
   isOpen: boolean;
   onClose: () => void;
   doctor?: Doctor;
-  onSuccess?: (ratingData: { rating: number; comment: string }) => void;
+  appointment?: Appointment;
+  onSuccess?: () => void;
 }
 
 export function RatingModal({ 
   isOpen, 
   onClose,
   doctor,
+  appointment,
   onSuccess 
 }: RatingModalProps) {
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [rating, setRating] = useState(0);
@@ -60,25 +66,98 @@ export function RatingModal({
       return;
     }
 
+    if (!appointment) {
+      setError('Không tìm thấy thông tin lịch hẹn');
+      return;
+    }
+
     setIsLoading(true);
     setError('');
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Check if appointment already has rating before submitting
+      const existingRating = await ratingsAPI.getByAppointment(appointment.id);
+      if (existingRating) {
+        setError('Lịch hẹn này đã được đánh giá.');
+        toast({
+          variant: 'destructive',
+          title: 'Lỗi',
+          description: 'Lịch hẹn này đã được đánh giá.',
+        });
+        setIsLoading(false);
+        return;
+      }
 
-      const ratingData = {
+      const payload = {
+        appointment_id: appointment.id,
         rating,
-        comment: comment.trim(),
+        comment: comment.trim() || undefined,
       };
+      
+      console.log('Creating rating with payload:', payload);
+      
+      await ratingsAPI.create(payload);
 
-      onSuccess?.(ratingData);
+      toast({
+        title: 'Thành công',
+        description: 'Đánh giá của bạn đã được gửi thành công.',
+      });
+
+      onSuccess?.();
       onClose();
       setRating(0);
       setComment('');
       setHoverRating(0);
     } catch (err: any) {
-      setError(err.message || 'Failed to submit rating');
+      console.error('Error creating rating:', err);
+      console.error('Error response:', err.response?.data);
+      
+      // Extract error message from various possible locations
+      let errorMessage = 'Không thể gửi đánh giá. Vui lòng thử lại.';
+      
+      if (err.response?.data) {
+        const errorData = err.response.data;
+        
+        // Check for field-specific errors
+        if (errorData.appointment_id) {
+          errorMessage = Array.isArray(errorData.appointment_id) 
+            ? errorData.appointment_id[0] 
+            : errorData.appointment_id;
+        } else if (errorData.appointment) {
+          errorMessage = Array.isArray(errorData.appointment) 
+            ? errorData.appointment[0] 
+            : errorData.appointment;
+        } else if (errorData.rating) {
+          errorMessage = Array.isArray(errorData.rating) 
+            ? errorData.rating[0] 
+            : errorData.rating;
+        } else if (errorData.non_field_errors) {
+          errorMessage = Array.isArray(errorData.non_field_errors) 
+            ? errorData.non_field_errors[0] 
+            : errorData.non_field_errors;
+        } else if (errorData.detail) {
+          errorMessage = errorData.detail;
+        } else if (errorData.message) {
+          errorMessage = errorData.message;
+        } else if (typeof errorData === 'string') {
+          errorMessage = errorData;
+        } else if (typeof errorData === 'object') {
+          // Try to get first error message from object
+          const firstKey = Object.keys(errorData)[0];
+          if (firstKey) {
+            const firstError = errorData[firstKey];
+            errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
+          }
+        }
+      }
+      
+      setError(errorMessage);
+      
+      toast({
+        variant: 'destructive',
+        title: 'Lỗi',
+        description: errorMessage,
+      });
     } finally {
       setIsLoading(false);
     }

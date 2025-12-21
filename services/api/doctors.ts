@@ -26,6 +26,7 @@ export interface DoctorAPIResponse {
   is_available: boolean;
   created_at: string;
   description: string | null;
+  average_rating?: number | null;
 }
 
 const transformDoctorData = (apiDoctor: DoctorAPIResponse): Doctor => {
@@ -44,8 +45,9 @@ const transformDoctorData = (apiDoctor: DoctorAPIResponse): Doctor => {
 
     // Giá trị mặc định phục vụ hiển thị UI
     specialization: apiDoctor.specialty_name || undefined,
-    rating: 4.5,
+    rating: apiDoctor.average_rating || undefined,
     patients: 0,
+    average_rating: apiDoctor.average_rating || null,
   };
 };
 
@@ -100,6 +102,23 @@ export const doctorsApi = {
     } catch (error) {
       console.error('Error fetching appointments:', error);
       return [];
+    }
+  },
+
+  getMyProfile: async (): Promise<Doctor | null> => {
+    try {
+      const response = await apiClient.get('/doctors/my-profile/');
+      // Response format: { success: true, data: {...} }
+      const responseData = response.data;
+      const apiDoctor: DoctorAPIResponse = responseData.data || responseData;
+      return transformDoctorData(apiDoctor);
+    } catch (error: any) {
+      console.error('Error fetching my doctor profile:', error);
+      // Nếu 404, có nghĩa là chưa có doctor profile
+      if (error.response?.status === 404) {
+        return null;
+      }
+      return null;
     }
   },
 };

@@ -51,4 +51,7 @@ export interface Doctor {
   
   // specialty_name từ backend (nếu có)
   specialty_name?: string | null;
+  
+  // average_rating từ backend
+  average_rating?: number | null;
 }

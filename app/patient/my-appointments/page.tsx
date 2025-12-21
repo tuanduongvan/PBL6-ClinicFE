@@ -13,10 +13,12 @@ import { RatingModal } from "@/components/modals/rating-modal"
 import { BookingAppointmentModal } from "@/components/modals/booking-appointment-modal"
 import { RescheduleAppointmentModal } from "@/components/modals/reschedule-appointment-modal"
 import { appointmentsAPI } from "@/services/api/appointments"
+import { ratingsAPI } from "@/services/api/ratings"
 import { notificationsAPI, Notification } from "@/services/api/notifications"
 import { useToast } from "@/hooks/use-toast"
 import { Appointment } from "@/types/appointment"
 import { Doctor } from "@/types/doctor"
+import { Rating } from "@/types/rating"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,11 +39,12 @@ export default function MyAppointmentsPage() {
   const { toast } = useToast()
   const [isMounted, setIsMounted] = useState(false)
   const [appointments, setAppointments] = useState<Appointment[]>([])
+  const [ratings, setRatings] = useState<Rating[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [ratingModalOpen, setRatingModalOpen] = useState(false)
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null)
-  const [selectedAppointmentId, setSelectedAppointmentId] = useState<number | null>(null)
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null)
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false)
   const [appointmentToReschedule, setAppointmentToReschedule] = useState<Appointment | null>(null)
   const [cancelingId, setCancelingId] = useState<number | null>(null)
@@ -54,8 +57,18 @@ export default function MyAppointmentsPage() {
     try {
       setIsLoading(true)
       setError(null)
-      const data = await appointmentsAPI.getMyAppointments()
-      setAppointments(data)
+      const [appointmentsData, ratingsData] = await Promise.all([
+        appointmentsAPI.getMyAppointments(),
+        ratingsAPI.getAll()
+      ])
+      setAppointments(appointmentsData)
+      setRatings(ratingsData)
+      // Debug: Log ratings to check structure
+      console.log('Fetched ratings:', ratingsData)
+      if (ratingsData.length > 0) {
+        console.log('First rating:', ratingsData[0])
+        console.log('First rating appointment:', ratingsData[0].appointment, typeof ratingsData[0].appointment)
+      }
     } catch (err: any) {
       console.error('Error fetching appointments:', err)
       setError('Không thể tải danh sách lịch hẹn. Vui lòng thử lại.')
@@ -325,32 +338,87 @@ export default function MyAppointmentsPage() {
     }
   }
 
-  const handleRateClick = (appointment: Appointment) => {
+  const handleRateClick = async (appointment: Appointment) => {
+    // Double check: Verify with API before opening modal
+    try {
+      const existingRating = await ratingsAPI.getByAppointment(appointment.id);
+      if (existingRating) {
+        toast({
+          variant: 'destructive',
+          title: 'Lỗi',
+          description: 'Lịch hẹn này đã được đánh giá.',
+        });
+        // Refresh to update UI
+        await fetchAppointments();
+        return;
+      }
+    } catch (err: any) {
+      // 404 is expected if no rating exists, ignore it
+      if (err.response?.status !== 404) {
+        console.error('Error checking rating:', err);
+      }
+    }
+    
+    // Also check local state
+    if (hasRating(appointment.id)) {
+      toast({
+        variant: 'destructive',
+        title: 'Lỗi',
+        description: 'Lịch hẹn này đã được đánh giá.',
+      });
+      return;
+    }
+    
     const doctor = convertToDoctor(appointment)
     if (doctor) {
       setSelectedDoctor(doctor)
-      setSelectedAppointmentId(appointment.id)
+      setSelectedAppointment(appointment)
       setRatingModalOpen(true)
     }
   }
 
-  const handleRatingSuccess = (ratingData: { rating: number; comment: string }) => {
-    // Here you would call the API to save the rating
-    console.log('Rating submitted:', {
-      appointmentId: selectedAppointmentId,
-      doctorId: selectedDoctor?.id,
-      ...ratingData
-    })
+  const handleRatingSuccess = async () => {
+    // Refresh appointments and ratings list after rating
+    await fetchAppointments()
     
-    toast({
-      title: 'Thành công',
-      description: 'Đã gửi đánh giá.',
-    })
-    
-    // Show success message or update UI
     setRatingModalOpen(false)
     setSelectedDoctor(null)
-    setSelectedAppointmentId(null)
+    setSelectedAppointment(null)
+  }
+
+  // Helper function to check if appointment has rating
+  const hasRating = (appointmentId: number): boolean => {
+    if (!ratings || ratings.length === 0) {
+      console.log(`No ratings found for appointment ${appointmentId}`);
+      return false;
+    }
+    
+    const hasRatingResult = ratings.some(rating => {
+      // appointment is now always a number (ID) from backend
+      const ratingAppointmentId = typeof rating.appointment === 'number' 
+        ? rating.appointment 
+        : (rating.appointment as any)?.id;
+      
+      const matches = ratingAppointmentId === appointmentId;
+      if (matches) {
+        console.log(`Found rating for appointment ${appointmentId}:`, rating);
+      }
+      return matches;
+    });
+    
+    console.log(`hasRating(${appointmentId}):`, hasRatingResult, 'Total ratings:', ratings.length);
+    return hasRatingResult;
+  }
+
+  // Helper function to get rating for appointment
+  const getRatingForAppointment = (appointmentId: number): Rating | undefined => {
+    return ratings.find(rating => {
+      // appointment is now always a number (ID) from backend
+      const ratingAppointmentId = typeof rating.appointment === 'number' 
+        ? rating.appointment 
+        : (rating.appointment as any)?.id;
+      return ratingAppointmentId === appointmentId;
+    })
   }
 
   const handleRescheduleClick = (appointment: Appointment) => {
@@ -492,15 +560,27 @@ export default function MyAppointmentsPage() {
                           <div className="flex flex-col items-end gap-3">
                             {getStatusBadge(appointment.status)}
                             {appointment.status === "completed" && doctor && (
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => handleRateClick(appointment)}
-                                className="flex items-center gap-1"
-                              >
-                                <Star className="w-4 h-4" />
-                                Đánh giá
-                              </Button>
+                              hasRating(appointment.id) ? (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  disabled
+                                  className="flex items-center gap-1 opacity-60 cursor-not-allowed"
+                                >
+                                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                  Đã đánh giá
+                                </Button>
+                              ) : (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleRateClick(appointment)}
+                                  className="flex items-center gap-1"
+                                >
+                                  <Star className="w-4 h-4" />
+                                  Đánh giá
+                                </Button>
+                              )
                             )}
                             <div className="flex flex-col gap-2">
                               {(appointment.status === "accepted" || appointment.status === "confirmed") && doctor && (
@@ -563,9 +643,10 @@ export default function MyAppointmentsPage() {
         onClose={() => {
           setRatingModalOpen(false)
           setSelectedDoctor(null)
-          setSelectedAppointmentId(null)
+          setSelectedAppointment(null)
         }}
         doctor={selectedDoctor || undefined}
+        appointment={selectedAppointment || undefined}
         onSuccess={handleRatingSuccess}
       />
 

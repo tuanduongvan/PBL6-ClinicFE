@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { Bell } from 'lucide-react';
+import { Bell, CheckCircle2, X, Calendar, Ban } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -164,15 +164,15 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'appointment_confirmed':
-        return '✅';
+        return <CheckCircle2 className="w-6 h-6 text-green-500" />;
       case 'appointment_rejected':
-        return '❌';
+        return <X className="w-6 h-6 text-red-500" />;
       case 'appointment_cancelled':
-        return '🚫';
+        return <Ban className="w-6 h-6 text-orange-500" />;
       case 'appointment_request':
-        return '📅';
+        return <Calendar className="w-6 h-6 text-blue-500" />;
       default:
-        return '🔔';
+        return <Bell className="w-6 h-6 text-gray-500" />;
     }
   };
 
@@ -229,9 +229,9 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
                   onClick={() => handleNotificationClick(notification)}
                 >
                   <div className="flex items-start gap-3">
-                    <span className="text-2xl flex-shrink-0">
+                    <div className="flex-shrink-0">
                       {getNotificationIcon(notification.type)}
-                    </span>
+                    </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
                         <p className={cn(

@@ -13,6 +13,7 @@ import { treatmentsAPI } from '@/services/api/treatments';
 import { CreateMedicalRecordModal } from '@/components/modals/create-medical-record-modal';
 import { CreatePrescriptionModal } from '@/components/modals/create-prescription-modal';
 import { useToast } from '@/hooks/use-toast';
+import { Calendar } from 'lucide-react';
 
 export default function DoctorDashboard() {
   const { user } = useAuthContext();
@@ -249,7 +250,7 @@ export default function DoctorDashboard() {
             {pendingAppointments.length === 0 && acceptedAppointments.length === 0 && (
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-3xl">📅</span>
+                    <Calendar className="w-8 h-8 text-gray-400" />
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-1">Chưa có lịch hẹn</h3>
                   <p className="text-gray-600 text-sm">Các lịch hẹn sẽ hiển thị ở đây</p>

@@ -20,7 +20,9 @@ import {
   Calendar as CalendarIcon,
   ExternalLink,
   Clock,
-  CheckCircle2
+  CheckCircle2,
+  Bell,
+  Stethoscope
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuthContext } from '@/components/auth-provider'
@@ -45,7 +47,7 @@ type BookingStep =
 
 interface Message {
   id: string
-  text: string
+  text: string | React.ReactNode
   sender: 'user' | 'bot'
   timestamp: Date
   type?: 'text' | 'info' | 'error' | 'greeting' | 'datetime_confirmation' | 'final_confirmation'
@@ -69,7 +71,7 @@ interface Message {
 }
 
 interface ActionChip {
-  label: string
+  label: string | React.ReactNode
   action: () => void
   variant?: 'default' | 'outline' | 'secondary'
 }
@@ -680,8 +682,8 @@ export function BookingChatbot() {
             sender: 'bot',
             type: 'final_confirmation',
             confirmationData: {
-              date: format(new Date(bookingData.date), 'dd/MM/yyyy'),
-              time: bookingData.time.slice(0, 5),
+              date: format(new Date(bookingData.date!), 'dd/MM/yyyy'),
+              time: bookingData.time!.slice(0, 5),
               doctorName: `BS. ${doctorName}`,
               specialtyName: specialtyName
             }
@@ -694,8 +696,8 @@ export function BookingChatbot() {
             sender: 'bot',
             type: 'final_confirmation',
             confirmationData: {
-              date: format(new Date(bookingData.date), 'dd/MM/yyyy'),
-              time: bookingData.time.slice(0, 5),
+              date: format(new Date(bookingData.date!), 'dd/MM/yyyy'),
+              time: bookingData.time!.slice(0, 5),
               doctorName: `BS. ${doctorName}`,
               specialtyName: 'Chuyên khoa'
             }
@@ -801,17 +803,46 @@ export function BookingChatbot() {
       hideTypingIndicator()
       const timeDisplay = time.slice(0, 5)
       addMessage({
-        text: `Xác nhận thông tin đặt lịch:\n\n📅 Ngày: ${format(new Date(bookingData.date!), 'dd/MM/yyyy')}\n🕐 Giờ: ${timeDisplay}\n👨‍⚕️ Bác sĩ: Đã chọn\n\nThông tin này có chính xác không?`,
+        text: (
+          <div className="space-y-2">
+            <p className="font-semibold">Xác nhận thông tin đặt lịch:</p>
+            <div className="space-y-1.5 text-sm">
+              <div className="flex items-center gap-2">
+                <CalendarIcon className="w-4 h-4" />
+                <span><strong>Ngày:</strong> {format(new Date(bookingData.date!), 'dd/MM/yyyy')}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                <span><strong>Giờ:</strong> {timeDisplay}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Stethoscope className="w-4 h-4" />
+                <span><strong>Bác sĩ:</strong> Đã chọn</span>
+              </div>
+            </div>
+            <p className="text-sm mt-3">Thông tin này có chính xác không?</p>
+          </div>
+        ),
         sender: 'bot',
         type: 'info',
         actions: [
           {
-            label: '✅ Xác nhận',
+            label: (
+              <>
+                <CheckCircle2 className="w-4 h-4 mr-1" />
+                Xác nhận
+              </>
+            ),
             action: handleConfirm,
             variant: 'default'
           },
           {
-            label: '❌ Hủy',
+            label: (
+              <>
+                <X className="w-4 h-4 mr-1" />
+                Hủy
+              </>
+            ),
             action: handleReset,
             variant: 'outline'
           }
@@ -851,7 +882,15 @@ export function BookingChatbot() {
         setCurrentStep('completed')
 
         addMessage({
-          text: `✅ Đặt lịch thành công!\n\nLịch hẹn của bạn đang chờ bác sĩ xác nhận. Bạn sẽ nhận được thông báo khi có cập nhật.`,
+          text: (
+            <>
+              <div className="flex items-center gap-2 mb-2">
+                <CheckCircle2 className="w-5 h-5 text-green-500" />
+                <span className="font-semibold">Đặt lịch thành công!</span>
+              </div>
+              <p>Lịch hẹn của bạn đang chờ bác sĩ xác nhận. Bạn sẽ nhận được thông báo khi có cập nhật.</p>
+            </>
+          ),
           sender: 'bot',
           type: 'info'
         })
@@ -1293,9 +1332,15 @@ export function BookingChatbot() {
                           : 'bg-muted/50 text-foreground rounded-tl-sm'
                       )}
                     >
-                      <p className="text-sm whitespace-pre-wrap leading-relaxed break-words" style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
-                        {message.text}
-                      </p>
+                      {typeof message.text === 'string' ? (
+                        <p className="text-sm whitespace-pre-wrap leading-relaxed break-words" style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
+                          {message.text}
+                        </p>
+                      ) : (
+                        <div className="text-sm leading-relaxed break-words" style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
+                          {message.text}
+                        </div>
+                      )}
                     </div>
 
                     {/* Example Texts */}
