@@ -7,7 +7,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Star, Loader2, AlertCircle, TrendingUp, MessageSquare } from 'lucide-react';
 import { useAuthContext } from '@/components/auth-provider';
-import { ratingsAPI, RatingByDoctorResponse, RatingListItem } from '@/services/api/ratings';
+import { ratingsAPI } from '@/services/api/ratings';
+import { RatingByDoctorResponse, RatingListItem } from '@/types/rating';
 import { doctorsApi } from '@/services/api/doctors';
 import { Doctor } from '@/types/doctor';
 import { format } from 'date-fns';
@@ -221,7 +222,7 @@ export default function PatientRatingPage() {
                         <AvatarFallback className="bg-muted text-foreground font-medium">
                           {rating.patient_name
                             .split(' ')
-                            .map((n) => n[0])
+                            .map((n: string) => n[0])
                             .join('')
                             .toUpperCase()}
                         </AvatarFallback>

@@ -217,11 +217,16 @@ export default function MedicalHistoryPage() {
                                   <span className="font-medium">Mục đích: </span>
                                   {treatment.purpose}
                                 </p>
-                                {treatment.drug && (
+                                {treatment.drugs && treatment.drugs.length > 0 && (
                                   <p className="text-xs text-muted-foreground">
                                     <span className="font-medium">Thuốc: </span>
-                                    {treatment.drug.name}
-                                    {treatment.dosage && ` - ${treatment.dosage}`}
+                                    {treatment.drugs
+                                      .map((drug) => {
+                                        const drugName = drug.drug?.name || 'Thuốc';
+                                        const dosage = drug.dosage ? ` - ${drug.dosage}` : '';
+                                        return `${drugName}${dosage}`;
+                                      })
+                                      .join(', ')}
                                   </p>
                                 )}
                               </div>

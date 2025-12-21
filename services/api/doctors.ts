@@ -121,4 +121,49 @@ export const doctorsApi = {
       return null;
     }
   },
+
+  updateMyProfile: async (data: {
+    user?: {
+      first_name?: string;
+      last_name?: string;
+      phone?: string;
+      gender_id?: number | null;
+      avatar?: string | null;
+    };
+    specialty?: number | null;
+    price?: number;
+    experience?: number | null;
+    credentiaUrl?: string | null;
+    description?: string | null;
+    currentWorkplace?: string | null;
+  }): Promise<Doctor | null> => {
+    try {
+      // Prepare payload - backend expects nested user data
+      const payload: any = {};
+      
+      if (data.user) {
+        payload.user = { ...data.user };
+        // The update method in DoctorSerializer sets attributes directly on user,
+        // so we can pass gender_id directly
+      }
+
+      // Doctor-specific fields
+      if (data.specialty !== undefined) payload.specialty = data.specialty;
+      if (data.price !== undefined) payload.price = data.price;
+      if (data.experience !== undefined) payload.experience = data.experience;
+      if (data.credentiaUrl !== undefined) payload.credentiaUrl = data.credentiaUrl;
+      if (data.description !== undefined) payload.description = data.description;
+      // Note: currentWorkplace is not in the Doctor model, it might be stored elsewhere
+      // For now, we'll skip it or handle it separately if needed
+
+      // Use the new endpoint that allows doctors to update their own profile
+      const response = await apiClient.patch('/doctors/my-profile/', payload);
+      const responseData = response.data;
+      const apiDoctor: DoctorAPIResponse = responseData.data || responseData;
+      return transformDoctorData(apiDoctor);
+    } catch (error: any) {
+      console.error('Error updating doctor profile:', error);
+      throw error;
+    }
+  },
 };

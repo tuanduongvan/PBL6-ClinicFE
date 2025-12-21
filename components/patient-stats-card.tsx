@@ -17,7 +17,7 @@ export function PatientStatsCard({ appointments }: PatientStatsCardProps) {
     apt => apt.status === 'completed'
   ).length;
   const cancelledAppointments = appointments.filter(
-    apt => apt.status === 'canceled' || apt.status === 'cancelled'
+    apt => apt.status === 'canceled'
   ).length;
 
   const stats = [

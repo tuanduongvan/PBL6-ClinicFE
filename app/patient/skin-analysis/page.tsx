@@ -266,7 +266,7 @@ export default function SkinAnalysisPage() {
               ) : (
                 <div className="relative">
                   <img
-                    src={analysisResult?.image || selectedImage}
+                    src={selectedImage}
                     alt={analysisResult ? "Analyzed skin result" : "Selected skin"}
                     className="w-full h-auto rounded-lg border border-border"
                   />

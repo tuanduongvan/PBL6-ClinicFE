@@ -192,17 +192,22 @@ export default function PrescriptionsPage() {
                           <span className="font-medium">Mục đích: </span>
                           {treatment.purpose}
                         </p>
-                        {treatment.drug && (
+                        {treatment.drugs && treatment.drugs.length > 0 && (
+                          <>
                           <p className="text-sm text-muted-foreground">
                             <span className="font-medium">Thuốc: </span>
-                            {treatment.drug.name}
+                              {treatment.drugs.map((drug) => drug.drug?.name).filter(Boolean).join(', ')}
                           </p>
-                        )}
-                        {treatment.dosage && (
+                            {treatment.drugs.some((drug) => drug.dosage) && (
                           <p className="text-sm text-muted-foreground">
                             <span className="font-medium">Liều lượng: </span>
-                            {treatment.dosage}
+                                {treatment.drugs
+                                  .filter((drug) => drug.dosage)
+                                  .map((drug) => `${drug.drug?.name || 'Thuốc'}: ${drug.dosage}`)
+                                  .join(', ')}
                           </p>
+                            )}
+                          </>
                         )}
                         {treatment.repeat_days && (
                           <p className="text-sm text-muted-foreground">

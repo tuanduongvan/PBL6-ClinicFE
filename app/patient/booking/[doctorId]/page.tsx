@@ -89,8 +89,8 @@ export default function BookingPage() {
                 <div className="flex flex-col sm:flex-row gap-6 items-start">
                   <div className="relative">
                     <img
-                      src={doctor.user.avatar || "/placeholder-user.jpg"}
-                      alt={`Dr. ${doctor.user.first_name}`}
+                      src={doctor.user?.avatar || "/placeholder-user.jpg"}
+                      alt={`Dr. ${doctor.user?.first_name || 'Doctor'}`}
                       className="w-32 h-32 rounded-full object-cover border-4 border-background shadow-md"
                     />
                     <Badge className="absolute -bottom-2 -right-2 px-3 py-1 bg-green-500 hover:bg-green-600">
@@ -100,7 +100,7 @@ export default function BookingPage() {
                   
                   <div className="flex-1 space-y-2">
                     <h1 className="text-3xl font-bold text-foreground">
-                      BS. {doctor.user.first_name} {doctor.user.last_name}
+                      BS. {doctor.user?.first_name || ''} {doctor.user?.last_name || ''}
                     </h1>
                     
                     <div className="flex items-center gap-2 text-primary font-medium">

@@ -206,7 +206,15 @@ export function RatingModal({
                   BS. {doctor.user?.first_name || doctor.first_name || ''} {doctor.user?.last_name || doctor.last_name || ''}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {doctor.specialization || doctor.specialty?.name || 'Bác sĩ'}
+                  {(() => {
+                    if (doctor.specialization) return doctor.specialization;
+                    if (doctor.specialty_name) return doctor.specialty_name;
+                    if (typeof doctor.specialty === 'object' && doctor.specialty !== null) {
+                      const specialtyObj = doctor.specialty as { name?: string };
+                      if (specialtyObj.name) return specialtyObj.name;
+                    }
+                    return 'Bác sĩ';
+                  })()}
                 </p>
               </div>
             </div>
