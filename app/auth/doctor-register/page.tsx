@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/form'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle, Loader2, ArrowLeft, CheckCircle2, Upload, FileText, X, Stethoscope, Users, Award, DollarSign } from 'lucide-react'
+import { AlertCircle, Loader2, ArrowLeft, CheckCircle2, Upload, FileText, X, Stethoscope, Users, Award, DollarSign, User } from 'lucide-react'
 import { authAPI } from '@/services/api/auth'
 import { specialitiesAPI, Speciality } from '@/services/api/specialities'
 import { fileUploadAPI } from '@/services/api/file-upload'
@@ -73,6 +73,8 @@ export default function DoctorRegisterPage() {
   const [isLoadingData, setIsLoadingData] = useState(true)
   const [specialities, setSpecialities] = useState<Speciality[]>([])
   const [credentialFile, setCredentialFile] = useState<File | null>(null)
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const [isUploadingFile, setIsUploadingFile] = useState(false)
 
   const form = useForm<DoctorRegistrationFormValues>({
@@ -146,6 +148,47 @@ export default function DoctorRegisterPage() {
     setCredentialFile(null)
   }
 
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate image file
+    if (!file.type.startsWith('image/')) {
+      toast({
+        variant: 'destructive',
+        title: 'Lỗi',
+        description: 'Chỉ chấp nhận file hình ảnh (JPG, PNG, etc.)',
+      })
+      e.target.value = ''
+      return
+    }
+
+    const fileSizeMB = fileUploadAPI.getFileSizeMB(file)
+    if (fileSizeMB > 10) {
+      toast({
+        variant: 'destructive',
+        title: 'Lỗi',
+        description: 'Kích thước file không được vượt quá 10MB',
+      })
+      e.target.value = ''
+      return
+    }
+
+    setAvatarFile(file)
+    
+    // Create preview
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setAvatarPreview(reader.result as string)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleRemoveAvatar = () => {
+    setAvatarFile(null)
+    setAvatarPreview(null)
+  }
+
   /**
    * Helper function to map form data to API payload
    * Ensures proper field name mapping and data type conversion
@@ -153,7 +196,8 @@ export default function DoctorRegisterPage() {
   const mapDoctorFormToApiPayload = (
     formData: DoctorRegistrationFormValues,
     username: string,
-    medicalLicenseUrl: string | null
+    medicalLicenseUrl: string | null,
+    avatarUrl: string | null
   ): DoctorRegisterPayload => {
     return {
       // User account fields (snake_case for backend)
@@ -165,6 +209,7 @@ export default function DoctorRegisterPage() {
       first_name: formData.firstName.trim(),
       last_name: formData.lastName.trim(),
       gender: 1 as const, // Default gender (UserGenderID)
+      avatar: avatarUrl,
       // Note: role is NOT needed - backend automatically sets it to Doctor
       
       // Doctor-specific fields
@@ -190,7 +235,29 @@ export default function DoctorRegisterPage() {
     setIsLoading(true)
 
     try {
-      // Step 1: Upload credential file if provided
+      // Step 1: Upload avatar file if provided
+      let avatarUrl: string | null = null
+      
+      if (avatarFile) {
+        setIsUploadingFile(true)
+        try {
+          avatarUrl = await fileUploadAPI.upload(avatarFile)
+          console.log('Avatar uploaded successfully:', avatarUrl)
+        } catch (uploadError: any) {
+          setIsUploadingFile(false)
+          console.error('Avatar upload error:', uploadError)
+          toast({
+            variant: 'destructive',
+            title: 'Lỗi tải lên avatar',
+            description: uploadError.message || 'Không thể tải lên avatar. Vui lòng thử lại.',
+          })
+          return // Stop execution if file upload fails
+        } finally {
+          setIsUploadingFile(false)
+        }
+      }
+
+      // Step 2: Upload credential file if provided
       let medicalLicenseUrl: string | null = null
       
       if (credentialFile) {
@@ -215,11 +282,11 @@ export default function DoctorRegisterPage() {
         medicalLicenseUrl = data.medicalLicenseUrl.trim()
       }
 
-      // Step 2: Generate username from email
+      // Step 3: Generate username from email
       const username = data.email.split('@')[0] + '_' + Date.now().toString().slice(-6)
 
-      // Step 3: Map form data to API payload
-      const registerData = mapDoctorFormToApiPayload(data, username, medicalLicenseUrl)
+      // Step 4: Map form data to API payload
+      const registerData = mapDoctorFormToApiPayload(data, username, medicalLicenseUrl, avatarUrl)
 
       // Debug: Log the final payload before sending
       console.log('Final Payload:', JSON.stringify(registerData, null, 2))
@@ -506,6 +573,64 @@ export default function DoctorRegisterPage() {
                           </FormItem>
                         )}
                       />
+
+                      {/* Avatar Upload */}
+                      <div className="space-y-2">
+                        <Label>Ảnh đại diện</Label>
+                        {!avatarPreview ? (
+                          <div className="flex items-center gap-4">
+                            <label
+                              htmlFor="avatarFile"
+                              className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                            >
+                              <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
+                                <p className="mb-2 text-sm text-muted-foreground">
+                                  <span className="font-semibold">Click để tải lên</span> hoặc kéo thả
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  JPG, PNG (Tối đa 10MB)
+                                </p>
+                              </div>
+                              <input
+                                id="avatarFile"
+                                type="file"
+                                className="hidden"
+                                accept="image/jpeg,image/png,image/jpg"
+                                onChange={handleAvatarChange}
+                                disabled={isLoading || isUploadingFile}
+                              />
+                            </label>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-3 p-4 border rounded-lg bg-muted/30">
+                            <img
+                              src={avatarPreview}
+                              alt="Avatar preview"
+                              className="w-20 h-20 rounded-full object-cover border-2 border-border"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">{avatarFile?.name}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {avatarFile ? (avatarFile.size / (1024 * 1024)).toFixed(2) : 0} MB
+                              </p>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={handleRemoveAvatar}
+                              disabled={isLoading || isUploadingFile}
+                              className="flex-shrink-0"
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        )}
+                        <FormDescription>
+                          Tùy chọn: Ảnh đại diện sẽ hiển thị trên hồ sơ của bạn
+                        </FormDescription>
+                      </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <FormField

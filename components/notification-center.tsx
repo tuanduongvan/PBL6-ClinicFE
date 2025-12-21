@@ -106,7 +106,8 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
         abortControllerRef.current = null;
       }
     };
-  }, [userId, fetchNotifications]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]); // Only depend on userId, fetchNotifications is stable with useCallback
 
   const handleMarkAsRead = async (notificationId: number) => {
     try {

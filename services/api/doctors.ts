@@ -17,6 +17,7 @@ export interface DoctorAPIResponse {
     is_active: boolean;
   };
   specialty: number | null;
+  specialty_name?: string | null;
   room: number | null;
   price: number;
   experience: number | null;
@@ -42,6 +43,7 @@ const transformDoctorData = (apiDoctor: DoctorAPIResponse): Doctor => {
     description: apiDoctor.description,
 
     // Giá trị mặc định phục vụ hiển thị UI
+    specialization: apiDoctor.specialty_name || undefined,
     rating: 4.5,
     patients: 0,
   };

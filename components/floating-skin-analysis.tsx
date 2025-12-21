@@ -205,32 +205,24 @@ export function FloatingSkinAnalysis() {
 
   return (
     <>
-      {/* Floating Button with Animation */}
+      {/* Floating Button - Simple & Professional */}
       <button
         onClick={handleClick}
-        className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-110 flex items-center justify-center group animate-bounce-slow"
+        className="relative w-14 h-14 rounded-full bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center group"
         aria-label="Phân tích da bằng AI"
       >
-        {/* Animated Rings */}
-        <div className="absolute inset-0 rounded-full border-4 border-primary/30 animate-ping"></div>
-        <div className="absolute inset-0 rounded-full border-2 border-primary/50 animate-pulse"></div>
-        
         {/* Main Icon */}
-        <div className="relative z-10">
-          <Sparkles className="w-8 h-8 text-white animate-spin-slow" />
-        </div>
-
-        {/* Animated Particles */}
-        <div className="absolute inset-0 overflow-hidden rounded-full">
-          <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-white/60 rounded-full animate-float-1"></div>
-          <div className="absolute top-1/3 right-1/4 w-1.5 h-1.5 bg-white/60 rounded-full animate-float-2"></div>
-          <div className="absolute bottom-1/4 left-1/3 w-1 h-1 bg-white/60 rounded-full animate-float-3"></div>
+        <Sparkles className="w-6 h-6 text-white" />
+        
+        {/* Simple Badge Indicator */}
+        <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent rounded-full border-2 border-background flex items-center justify-center">
+          <div className="w-2 h-2 bg-white rounded-full"></div>
         </div>
 
         {/* Tooltip */}
-        <div className="absolute bottom-full right-0 mb-3 px-4 py-2 bg-gradient-to-r from-primary to-accent text-white text-sm font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap shadow-xl transform group-hover:translate-y-0 translate-y-2">
+        <div className="absolute bottom-full right-0 mb-2 px-3 py-1.5 bg-gray-900 dark:bg-gray-800 text-white text-xs font-medium rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap shadow-lg pointer-events-none">
           Phân tích da AI
-          <div className="absolute top-full right-6 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-primary"></div>
+          <div className="absolute top-full right-4 w-0 h-0 border-l-[4px] border-r-[4px] border-t-[4px] border-transparent border-t-gray-900 dark:border-t-gray-800"></div>
         </div>
       </button>
 

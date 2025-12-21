@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
@@ -35,11 +35,16 @@ export default function SkinAnalysisPage() {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
 
-  // Redirect if not logged in
-  if (!isLoggedIn || user?.role?.id !== 3) {
-    if (typeof window !== 'undefined') {
+  // Redirect if not logged in or not a patient
+  useEffect(() => {
+    if (!isLoggedIn || user?.role?.id !== 3) {
       router.push('/');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn, user?.role?.id]);
+
+  // Don't render if not logged in or not a patient
+  if (!isLoggedIn || user?.role?.id !== 3) {
     return null;
   }
 

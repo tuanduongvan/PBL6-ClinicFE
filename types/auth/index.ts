@@ -78,6 +78,7 @@ export interface DoctorRegisterPayload {
   last_name: string;
   gender: UserGenderID;
   role?: 2; // Doctor role is optional (backend automatically sets it to 2)
+  avatar?: string | null;
   
   // Doctor-specific fields
   specialty: number;

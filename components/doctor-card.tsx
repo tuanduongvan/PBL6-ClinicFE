@@ -86,9 +86,9 @@ export function DoctorCard({ doctor, onBooking }: DoctorCardProps) {
         <Button className="w-full" onClick={onBooking}>
           Đặt Lịch Ngay
         </Button>
-        <Link href={`/patient/booking/${doctor.id}`} className="w-full">
+        <Link href={`/doctors/${doctor.id}`} className="w-full">
           <Button variant="outline" className="w-full">
-            Xem Chi Tiết
+            Xem Portfolio
           </Button>
         </Link>
       </CardFooter>

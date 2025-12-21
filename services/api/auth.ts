@@ -16,6 +16,9 @@ export const authAPI = {
       if (data.tokens?.access) {
         localStorage.setItem('authToken', data.tokens.access);
       }
+      if (data.tokens?.refresh) {
+        localStorage.setItem('refreshToken', data.tokens.refresh);
+      }
 
       return data;
     } catch (error: any) {
@@ -43,6 +46,9 @@ export const authAPI = {
       const response = await apiClient.post('/auth/signup/', credentials);
       if (response.data.tokens?.access) {
         localStorage.setItem('authToken', response.data.tokens.access);
+      }
+      if (response.data.tokens?.refresh) {
+        localStorage.setItem('refreshToken', response.data.tokens.refresh);
       }
       return response.data;
     } catch (error: any) {
@@ -105,6 +111,9 @@ export const authAPI = {
         // Optional fields
         ...(credentials.currentWorkplace && { 
           currentWorkplace: credentials.currentWorkplace.trim() 
+        }),
+        ...(credentials.avatar && { 
+          avatar: credentials.avatar 
         }),
       };
       
@@ -218,6 +227,9 @@ export const authAPI = {
       const response = await apiClient.post('/auth/signup/', credentials);
       if (response.data.tokens?.access) {
         localStorage.setItem('authToken', response.data.tokens.access);
+      }
+      if (response.data.tokens?.refresh) {
+        localStorage.setItem('refreshToken', response.data.tokens.refresh);
       }
       return response.data;
     } catch (error: any) {

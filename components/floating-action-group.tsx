@@ -17,7 +17,7 @@ import { BookingChatbot } from '@/components/chatbot/booking-chatbot'
  */
 export function FloatingActionGroup() {
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-4 items-end pointer-events-none">
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 items-end pointer-events-none">
       {/* Skin Analysis Button - positioned above chatbot */}
       <div className="relative pointer-events-auto">
         <FloatingSkinAnalysis />

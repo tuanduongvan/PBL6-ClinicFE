@@ -3,11 +3,12 @@
  */
 
 export interface DateTimeExtractionResponse {
-  input_text: string;
-  extracted: {
+  input_text?: string;
+  extracted?: {
     date: string; // Format: "26/12/2025"
     time: string; // Format: "9:30"
   };
+  error?: string; // Error message from API
 }
 
 export const datetimeExtractionAPI = {
@@ -63,6 +64,11 @@ export const datetimeExtractionAPI = {
       // Validate response structure
       if (!data || typeof data !== 'object') {
         throw new Error('Invalid response format from API');
+      }
+      
+      // If response has error field, return it
+      if (data.error) {
+        return { error: data.error };
       }
       
       if (!data.extracted || typeof data.extracted !== 'object') {

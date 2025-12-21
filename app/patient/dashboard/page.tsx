@@ -129,7 +129,8 @@ export default function PatientDashboard() {
         clearInterval(pollingIntervalRef.current);
       }
     };
-  }, [isLoggedIn, user?.role?.id, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn, user?.role?.id]); // Remove router from dependencies to avoid infinite loop
 
   const handleBookDoctor = (doctor: Doctor) => {
     setSelectedDoctor(doctor);

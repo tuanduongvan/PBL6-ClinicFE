@@ -48,4 +48,7 @@ export interface Doctor {
   specialization?: string;
   rating?: number;
   patients?: number;
+  
+  // specialty_name từ backend (nếu có)
+  specialty_name?: string | null;
 }

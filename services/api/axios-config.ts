@@ -91,14 +91,24 @@ apiClient.interceptors.response.use(
           `${
             process.env.NEXT_PUBLIC_API_BASE_URL ||
             'https://performances-telling-personalized-haven.trycloudflare.com/api'
-          }/token/refresh/`,
+          }/accounts/refresh/`,
           { refresh: refreshToken }
         );
 
-        const { access } = response.data;
+        // Backend returns: { message, tokens: { access, refresh } }
+        const tokens = response.data.tokens || response.data;
+        const { access, refresh: newRefreshToken } = tokens;
+
+        if (!access) {
+          throw new Error('No access token in refresh response');
+        }
 
         if (typeof window !== 'undefined') {
           localStorage.setItem('authToken', access);
+          // Save new refresh token if provided (backend returns new refresh token)
+          if (newRefreshToken) {
+            localStorage.setItem('refreshToken', newRefreshToken);
+          }
         }
 
         apiClient.defaults.headers.common['Authorization'] =
