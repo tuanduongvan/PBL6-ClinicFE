@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthContext } from '@/components/auth-provider';
 import {
@@ -91,9 +91,6 @@ export function FloatingSkinAnalysis() {
       });
       setStream(mediaStream);
       setIsCameraOpen(true);
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
     } catch (error) {
       toast({
         variant: 'destructive',
@@ -123,6 +120,9 @@ export function FloatingSkinAnalysis() {
     if (stream) {
       stream.getTracks().forEach(track => track.stop());
       setStream(null);
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
     }
     setIsCameraOpen(false);
   };
@@ -171,6 +171,22 @@ export function FloatingSkinAnalysis() {
       fileInputRef.current.value = '';
     }
   };
+
+  // Handle video stream when camera opens
+  useEffect(() => {
+    if (isCameraOpen && stream && videoRef.current) {
+      videoRef.current.srcObject = stream;
+      videoRef.current.play().catch((error) => {
+        console.error('Error playing video:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Lỗi',
+          description: 'Không thể phát video từ camera.',
+        });
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCameraOpen, stream]);
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {

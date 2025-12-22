@@ -43,6 +43,22 @@ export default function SkinAnalysisPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoggedIn, user?.role?.id]);
 
+  // Handle video stream when camera opens
+  useEffect(() => {
+    if (isCameraOpen && stream && videoRef.current) {
+      videoRef.current.srcObject = stream;
+      videoRef.current.play().catch((error) => {
+        console.error('Error playing video:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Lỗi',
+          description: 'Không thể phát video từ camera.',
+        });
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCameraOpen, stream]);
+
   // Don't render if not logged in or not a patient
   if (!isLoggedIn || user?.role?.id !== 3) {
     return null;
@@ -89,9 +105,6 @@ export default function SkinAnalysisPage() {
       });
       setStream(mediaStream);
       setIsCameraOpen(true);
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
     } catch (error) {
       toast({
         variant: 'destructive',
@@ -121,6 +134,9 @@ export default function SkinAnalysisPage() {
     if (stream) {
       stream.getTracks().forEach(track => track.stop());
       setStream(null);
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
     }
     setIsCameraOpen(false);
   };
